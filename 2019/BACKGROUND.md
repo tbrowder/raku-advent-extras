@@ -25,7 +25,7 @@ deliveries, but requiring customized software tools to execute
 long-running CAD programs and generate reports summarizing studies of
 modeling weapons effects (WE) on various target vehicles. The work
 involved heavy use of the US Department of Defense's CAD program
-[BRL-CAD](https://brl-cad.org) (which was made open-source in
+[BRL-CAD](https://brlcad.org) (which was made open-source in
 2004). The program as used in typical WE modeling tasks generates
 hundreds of thousands of lines of ASCII output which has to be
 analyzed and summarized and discussed in detail in published reports.
