@@ -2,9 +2,11 @@ For personal enrichment in the late 1980's I did take, off-duty while
 still in active service with the USAF, courses in COBOL, ADA, and IBM
 System 360 Assembler: still all on a main-frame, batch job.
 
-After retirement, I was able to get hired as a Branch Chief (supervising two people) and Senior Analyst.
- as a Senior Analyst hired to conduct vulnerability
-studies of weapons effects against hardened and buried bunkers,
+After retirement, I was able to get hired with the local Field Office
+of Oklahoma State University as a Senior Analyst and Branch Chief (supervising two
+people).  as a Senior Analyst hired to conduct
+vulnerability studies of weapons effects against hardened and buried
+bunkers,
 
 But I was
 lucky enough in my last career to be hired as an engineer with lots of
