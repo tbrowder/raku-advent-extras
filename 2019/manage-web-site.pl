@@ -511,6 +511,9 @@ foreach my $arg (@ARGV) {
   # 23 (see 7)
   # 24 (see 15)
   # other options ===============
+
+=pod
+
   elsif ($arg =~ m{\A -frep}xms) {
     die "FATAL: The '-frep' option has been turned off.\n";
 
@@ -532,6 +535,9 @@ foreach my $arg (@ARGV) {
     $GREP_update_asof_iso = "$yr-$mo-$da";
     $frep = 1;
   }
+
+=cut
+
   elsif ($arg =~ m{\A -rea}xms) {
     $real_xls = 1;
   }
@@ -606,6 +612,8 @@ foreach my $arg (@ARGV) {
   }
 }
 
+=pod
+
 if (!$frep) {
   if (!-f $GREP_update_asof_file) {
     print "ERROR:  You need to update USAFA Endowment fund raising data\n";
@@ -618,6 +626,8 @@ if (!$frep) {
   chomp $s;
   $GREP_update_asof_iso = $s;
 }
+
+=cut
 
 if (0 && $debug) {
   die "DEBUG: input res = $G::ires\n";
