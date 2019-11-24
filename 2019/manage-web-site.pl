@@ -27,15 +27,12 @@ use Graphics::Magick;
 # for mail
 use Email::Valid;
 
-use lib ('.', '/home/tbrowde/mydata/tbrowde-home/mydomains/perl-mods');
+use lib ('.', './lib');
 
 use G; # global vars for port to Raku
 
 # for menus
 use WebSiteMenu;
-
-# for cloud files caching:
-use CLOUD_USAFA;
 
 # for GEO info (google not working)
 use Geo::Ellipsoid;
@@ -6322,7 +6319,6 @@ sub show_restricted_data_info {
 } # show_restricted_data_info
 
 sub write_rtf_list {
-  use lib ('../../primary-web-servers/rtf-modules');
   use MyRTF;
 
   my $csnum    = shift @_;
