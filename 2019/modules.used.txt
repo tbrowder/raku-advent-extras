@@ -1,0 +1,52 @@
+#================================================
+# Public modules (CPAN)
+#================================================
+Data::Dumper
+Carp
+Readonly
+Text::CSV
+Spreadsheet::DataToExcel
+DirHandle
+File::Glob qw(:globally)
+File::Basename
+File::Copy
+Storable
+DBI
+Data::Table::Excel qw(xls2tables xlsx2tables)
+RTF::Writer
+Graphics::Magick
+Email::Valid
+Geo::Ellipsoid
+WWW::Google::Contacts
+Data::Serializer::Raw
+integer
+Digest::MD5::File qw(file_md5_hex)
+
+#=========================================================================
+# Private modules
+#=============================
+#==== to be sanitized ========
+GEO_DATA_USAFA # DONE - SANITIZE!!!
+CL             # DONE - SANITIZE!!!
+MySECRETS      # DONE - SANITIZE!!!
+#=============================
+AOG2
+AOG
+CLASSMATES_FUNCS qw(:all)
+CSReps
+G
+GEO_MAPS_USAFA
+GMAIL
+Grads
+HONOREES
+MSDate
+MyRTF
+PicFuncs
+Stats
+U65
+U65Classmate
+U65Fields
+USAFA_SiteNews
+USAFA_Stats
+USAFA_Tweet
+WebSiteMenu
