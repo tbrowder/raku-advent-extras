@@ -33,3 +33,5 @@ inc/
 /MANIFEST.bak
 /pm_to_blib
 /*.zip
+.tweet.dbf
+usafa1965.tweet.dbf
