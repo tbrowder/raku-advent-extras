@@ -1457,7 +1457,7 @@ $unav
   }
 </style>
 <script
-  src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBVk99PhQvaBG8lmCX_MX3EJ2n5kRHaun0'
+  src = 'https://maps.googleapis.com/maps/api/js?key=DELETED'
 ></script>
 <script
   src = '../js-google/markerwithlabel_packed.js'
@@ -1804,7 +1804,7 @@ HERE
   function loadScript() {
     var script = document.createElement('script');
     script.type = 'text/javascript';
-    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBVk99PhQvaBG8lmCX_MX3EJ2n5kRHaun0&v=3&sensor=false&callback=initialize';
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=DELETED0&v=3&sensor=false&callback=initialize';
     script.src = '../js-google/';
     document.body.appendChild(script);
   }
