@@ -883,7 +883,7 @@ if ($web && @G::ofils) {
 }
 elsif (!$web && @G::ofils) {
   my $n = @G::ofils;
-  $my $s = $n > 1 ? 's' : '';
+  #my $s = $n > 1 ? 's' : '';
   my $s = $n > 1 ?? 's' !! '';
   say "See output file$s:";
   .say for @G::ofils;
