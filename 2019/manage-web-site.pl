@@ -276,7 +276,7 @@ my $mem           = 0;
 my $preps         = 0; # seldom used
 my $rewrite       = 0;
 my $restrict      = 0;
-my $sqdn          = 0;
+$G::sqdn          = 0;
 my $tweet         = 0;
 my $u65           = 0;
 my $war           = 0; # one-shot (um, used twice)
@@ -305,7 +305,7 @@ sub zero_modes {
   $preps    = 0;
   $restrict = 0;
   $rewrite  = 0;
-  $sqdn     = 0;
+  $G::sqdn     = 0;
   $sqdnP    = 0;
   $tweet    = 0;
   $u65      = 0;
@@ -406,7 +406,7 @@ foreach my $arg (@ARGV) {
       $sqdnP = $val;
     }
     else {
-      $sqdn = $val;
+      $G::sqdn = $val;
     }
   }
   #  8
@@ -781,9 +781,9 @@ elsif ($sqdnP) {
   printf "Finding source picture files for CS-%02d...\n", $sqdnP;
   find_sqdn_pics($sqdnP);
 }
-elsif ($sqdn) {
-  printf "Writing an rtf file of contact data for CS-%02d...\n", $sqdn;
-  write_rtf_list($sqdn, \%CL::mates);
+elsif ($G::sqdn) {
+  printf "Writing an rtf file of contact data for CS-%02d...\n", $G::sqdn;
+  write_rtf_list($G::sqdn, \%CL::mates);
 }
 elsif ($address) {
   say "Writing an rtf file of contact data for keys in file '$address'...";
@@ -862,271 +862,6 @@ sub build_templated_cgi_files {
 } # build_templated_cgi_files
 
 =cut
-
-sub write_rtf_list {
-  use MyRTF;
-
-  my $csnum    = shift @_;
-  my $clref    = shift @_; # \%CL
-  my $addrfile = shift @_; # file of keys
-
-  my $K = defined $addrfile && -f $addrfile ? 1 : 0;
-
-  my $cs = sprintf "CS-%02d", $csnum if !$K;
-
-  my ($title, $ofil, $title2, $ofil2) = ('','','','');
-  if ($K) {
-      $title  = "MAILING ADDRESSES";
-      $ofil   = "addresses.doc";
-  }
-  else {
-      $title  = "$cs LIVING MEMBERS CONTACT DATA";
-      $ofil   = "$cs-living-member-data.doc";
-      $title2 = "$cs MEMBERS' WIDOW CONTACT DATA";
-      $ofil2  = "$cs-deceased-member-data.doc";
-  }
-
-  my (@n, @d) = ();
-  if ($K) {
-      # keys in a file
-      open my $fp, '<', $addrfile
-	  or die "$addrfile: $!";
-      # check for dups on read
-      my %d = ();
-      while (defined(my $line = <$fp>)) {
-	  my @d = split(' ', $line);
-	  next if !defined $d[0];
-	  my $k = shift @d;
-	  $d{$k} = $1 if !exists $d{$k};
-      }
-      @n = (sort keys %d);
-  }
-  else {
-      # sdqn data
-      foreach my $n (sort keys %{$clref}) {
-	  # sqdn may be multiple
-	  my $s = $CL::mates{$n}{sqdn};
-	  my @sqdn = split(',', $s);
-	  #print "debug sqdns: '@sqdn'\n";
-	  my $sq = 0;
-	  foreach my $ss (@sqdn) {
-	      if ($ss == $csnum) {
-		  #print "debug sqdns: sq '$sq' == '$sqdn'\n";
-		  $sq = $ss;
-		  last;
-	      }
-	  }
-	  #print "debug found sqdn: '$sq' for sqdn '$sqdn'\n";
-	  next if
-	      $sq != $sqdn;
-	  if ($clref->{$n}{deceased}) {
-	      push @d, $n;
-	  }
-	  else {
-	      push @n, $n;
-	  }
-      }
-  }
-
-  if (!@n && !@d) {
-      if ($K) {
-	  say "No keys found for file $addrfile.\n";
-      }
-      else {
-	  printf "No files found for CS-%02d.\n", $csnum;
-      }
-    exit;
-  }
-
-  # RTF constants
-  # header info
-  # "constants"
-  my $tab = 0.25; # inches
-
-  # other vars
-  my $sb = 12./72.; # input must be in inches for my functions
-
-  my @fonts
-    = (
-       'Times New Roman',
-      );
-  my $date = CLASSMATES_FUNCS::get_datetime();
-  my $tab0 = 0.3; # inches
-  my $tab1 = 1.2; # inches
-
-  # generate files ==============
-  my @aref = $K ? (\@n) : (\@n, \@d);
-  my $naref = @aref;
-  for (my $i = 0; $i < $naref; ++$i) {
-    my $typ = $i ? 'living' : 'widows';
-    my @arr = @{$aref[$i]};
-    next if !@arr;
-
-    my $of = $i ? $ofil2  : $ofil;
-    my $ti = $i ? $title2 : $title;
-    open my $fp, '>', $of
-      or die "$of: $!";
-
-    my $r  = RTF::Writer->new_to_handle($fp);
-
-    $r->prolog('fonts' => \@fonts,);
-
-    # set document flags
-    MyRTF::write_rtf_prelims($fp,
-			     {
-			      LM => 1.25,
-			      RM => 1,
-			      TM => 1,
-			      BM => 1,
-			      gutters => 1,
-			     });
-    MyRTF::set_rtf_pagenumber($fp,
-			      {
-			       #prefix   => 'R-',
-			       justify  => 'r',
-			       position => 'f'
-			      });
-
-    MyRTF::write_rtf_para($r, $fp, $ti,
-			  {
-			   sb => 0,
-			   justify => 'c',
-			   bold => 1
-			  });
-    MyRTF::write_rtf_para($r, $fp, "As of $date.",
-			  {
-			   sb => 0.2,
-			   justify => 'c',
-			   bold => 1
-			  }) if !$K;
-    MyRTF::write_rtf_para($r, $fp, "(Please notify Tom Browder of any errors or omissions.)",
-			  {
-			   sb => 0.2,
-			   sa => 0.2,
-			   justify => 'c',
-			   #bold => 0,
-			  }) if !$K;
-
-    # body count
-    my $peeps = @arr;
-    MyRTF::write_rtf_para($r, $fp, "\nTotal number people: $peeps", {bold => 1});
-
-    my $num = 0;
-    foreach my $n (@arr) {
-      my $Name = U65::get_full_name($clref, $n);
-      say "Member '$Name'...";
-
-      my $nr = \%{$clref->{$n}};
-
-      my $deceased = $nr->{deceased};
-      $Name = "$Name (deceased)" if $deceased;
-      ++$num;
-
-      # print some data fields
-      my $wife = $nr->{spouse_first} ? $nr->{spouse_first} : '';
-      my $poc  = $nr->{family_poc};
-      if ($poc) {
-	$Name = "$Name ($poc: $wife)";
-      }
-      elsif ($wife) {
-        $Name = "$Name (wife: $wife)" if !$K;
-      }
-      MyRTF::write_rtf_para($r, $fp, $Name, {sb => .1}); #, {fi => $tabg});
-
-      # phones ==================================
-      my $p = '';
-      my @p = ();
-      my %t =
-	(
-	 0 => 'M',
-	 1 => 'H',
-	 2 => 'W',
-	);
-      $p[0] = $nr->{cell_phone} ? $nr->{cell_phone} : '';
-      $p[1] = $nr->{home_phone} ? $nr->{home_phone} : '';
-      $p[2] = $nr->{work_phone} ? $nr->{work_phone} : '';
-      for (my $i = 0; $i < 3; ++$i) {
-	my $val = $p[$i];
-	next if !$val;
-	my $typ = $t{$i};
-	$p .= ', ' if $p;
-	$p .= "$val ($typ)";
-      }
-      MyRTF::write_rtf_para($r, $fp, "\t$p")
-	  if $p && !$K;
-
-      # emails ==================================
-      my $e = '';
-      my $email = $nr->{email} ? $nr->{email} : '';
-      $e = "email: $email" if $email;
-      my $email2 = $nr->{email2} ? $nr->{email2} : '';
-      die "???" if ($email2 && !$email);
-      $e .= ", $email2" if $email2;
-      MyRTF::write_rtf_para($r, $fp, "\t$e")
-	  if $e && !$K;
-
-      # address ==================================
-      my $address1 = $nr->{address1} ? $nr->{address1} : '';
-      MyRTF::write_rtf_para($r, $fp, "\t$address1")
-	  if $address1;
-      my $address2 = $nr->{address2} ? $nr->{address2} : '';
-      MyRTF::write_rtf_para($r, $fp, "\t$address2")
-	  if $address2;
-      my $address3 = $nr->{address3} ? $nr->{address3} : '';
-      MyRTF::write_rtf_para($r, $fp, "\t$address3")
-	  if $address3;
-
-      my $city    = $nr->{city}    ? $nr->{city}    : '';
-      my $state   = $nr->{state}   ? $nr->{state}   : '';
-      my $zip     = $nr->{zip}     ? $nr->{zip}     : '';
-      my $country = $nr->{country} ? $nr->{country} : '';
-      if ($country =~ m{US}) {
-          $country = '';
-      }
-
-      my $town;
-      if ($city) {
-	$town = $city;
-      }
-      if ($state) {
-	$town .= ', ' if $town;
-	$town .= $state;
-      }
-      if ($zip) {
-	$town .= '  'if $town;
-	$town .= $zip;
-      }
-      if ($country) {
-        $town .= "\n\t$country";
-      }
-
-      MyRTF::write_rtf_para($r, $fp, "\t$town")
-	  if $town;
-
-      # may need to start a new page at some point
-      if ($csnum == 24) {
-	if ($n =~ /^cullen/i
-	    || $n =~ /^kirby/i
-	    || $n =~ /^rank/i
-	    #|| $n =~ /^oliveri/i
-	    #|| $n =~ /^ryan/i
-	   ) {
-	  # page break AFTER the name above
-	  $r->Page();
-	}
-      }
-      # repeat body count
-      #MyRTF::write_rtf_para($r, $fp, "\nTotal number people: $peeps", {bold => 1});
-    }
-    # close the file
-    $r->close();
-
-    say "See output file '$of'.";
-  }
-
-  exit;
-
-} # write_rtf_list
 
 sub gen_tlspm {
   unlink $tlspm if (-f $tlspm);

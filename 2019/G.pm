@@ -48,6 +48,7 @@ our $GREP_noteJ;
 our $GREP_noteO;
 our $GREP_noteI;
 our $GREP_noteK;
+our $sqdn;
 
 # all modules must return a true value
 1;
