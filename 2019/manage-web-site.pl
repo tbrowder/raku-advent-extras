@@ -863,11 +863,6 @@ sub build_templated_cgi_files {
 
 =cut
 
-sub put_CL_deceased {
-  my $hash_ref = shift @_;
-  store $hash_ref, $decfil;
-} # put_CL_deceased
-
 sub has_CL_changed {
   # test against CL.pm with an md5 hash to see if it has changed
   use Digest::MD5::File qw(file_md5_hex);
