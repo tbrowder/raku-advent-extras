@@ -105,15 +105,15 @@ my $GREP_noteC = 'Donors contributing to the initial $500,000 raised.';
 my $GREP_noteD = 'Goal = (num grads [3] &#8211; num silent donors [4]) &#215; $1,000.';
 my $GREP_noteF = 'Number of grad donors.';
 #my $GREP_noteG = 'Less silent donors, plus silent donors who have given gifts after the silent phase.';
-my $GREP_noteH = 'Donors giving $1965.00 or more in total gifts (including the silent phase).';
+$G::GREP_noteH = 'Donors giving $1965.00 or more in total gifts (including the silent phase).';
 my $GREP_noteI = '% Grad Participation = (num grad donors) &divide; (num assumed living grads) &#215; 100.';
 my $GREP_noteK = 'Number of grad donors (including silent donors).';
 my $GREP_noteL = 'Grad donors (less silent donors) plus specially-designated deceased honorees.';
 my $GREP_noteM = 'Number in column [3] less number in column [4].';
 my $GREP_noteN = '% Goal = (total gifts [2] &divide; goal [5]) &times; 100.';
 # per Dick's comments
-my $GREP_noteJ = 'The numbers in a squadron may vary from the graduation number if a classmate chooses to be counted in his original squadron.';
-my $GREP_noteO = '% Grad Gray Tag Givers = (num grad gray tag givers) &divide; (num living grads) &#215; 100.';
+$G::GREP_noteJ = 'The numbers in a squadron may vary from the graduation number if a classmate chooses to be counted in his original squadron.';
+$G::GREP_noteO = '% Grad Gray Tag Givers = (num grad gray tag givers) &divide; (num living grads) &#215; 100.';
 my $GREP_noteP = 'Gifts given for the entire class.';
 my $GREP_noteQ = 'Lost grads are assumed to be living.';
 
@@ -863,236 +863,6 @@ sub build_templated_cgi_files {
 
 =cut
 
-sub commify {
-  # from Perl Cookbook Recipe 2.17 (with mods)
-  my $string = shift @_;
-  return $string if !defined $string;
-
-  my $text = reverse $string;
-  $text =~ s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
-  return scalar reverse $text;
-} # commify
-
-sub write_endowment_gtags_report {
-  my $aref = shift @_;
-  my $ghref      = $aref->{ghref};
-  my $garef      = $aref->{garef};
-  my $stats_href = $aref->{stats_href};
-  my $GREP_href  = $aref->{GREP_href};
-  my $phref      = $aref->{phref};
-
-  my @gcols  = @{$garef};
-  my $nccols = @gcols;
-
-  # actual output columns
-  my $nc = 6;
-
-  # build the page as a templated file
-  my $f = './html-templates-master/endowment-graytags-report.html';
-  open my $fp, '>', $f
-    or die "$f: $!";
-
-  {
-    print $fp <<"HERE";
-<!doctype html>
-<html>
-  <head>
-    <?gen-web-site insert-css-links ?>
-    <title>USAFA Endowment Gray Tag Givers</title>
-    <style type="text/css">
-      table.cs-reps td.p10 {
-        padding-right: 10px;
-      }
-      table.cs-reps td.p15 {
-        padding-right: 15px;
-      }
-      table.cs-reps td.p25 {
-        padding-right: 25px;
-      }
-      table.cs-reps {
-        font-size: 0.9em;
-      }
-      .w125 {
-        width: 125px;
-      }
-      .w100 {
-        width: 100px;
-      }
-      .w75 {
-        width: 75px;
-      }
-      /* table.cs-reps th { height: 0.6in; } */
-    </style>
-  </head>
-
-  <body>
-    <?gen-web-site insert-nav-div ?>
-
-HERE
-  }
-
-  my $isodate = $GREP_href->{isodate};
-  my $ptitle = "Class of '65 Reunion Project - Gray Tag Givers as of $isodate";
-  print $fp "<h3>$ptitle</h3>\n";
-
-  print $fp "<div class='links'>\n";
-  print $fp "<table class='links'><tr>\n";
-  print $fp "<!-- SEVEN LINKS -->\n";
-  print $fp "<td>[<a href='./endowment-part-report.html'><span class='bold'>Participation Report</span></a>]</td>\n";
-  print $fp "<td>[Gray Tag Givers]</td>\n";
-  print $fp "<td>[<a href='./endowment-sqdn-report.html'><span class='bold'>Squadron Progress</span></a>]</td>\n";
-  print $fp "<td>[<a href='./wing-greps.html'><span class='bold'>Gift Overview</span></a>]</td>\n";
-  print $fp "<td>[<a href='./gift-competition.html'><span class='bold'>Sqdn Competition</span></a>]</td>\n";
-  print $fp "<td>[<a href='./in-memory-of.html'><span class='bold'>In Memory</a>]</td>\n";
-  print $fp "<td>[<a href='./in-honor-of.html'><span class='bold'>Honored</a>]</td>\n";
-  print $fp "</tr></table>\n";
-  print $fp "</div>\n";
-
-  #print $fp "<br />\n";
-
-  print $fp "<h5>(A '[N]' in a cell means refer to note N at the bottom.)</h5>\n";
-
-=pod
-
-  print $fp "<h5>[CAUTION: THIS IS A NON-NORMATIVE DRAFT DOCUMENT UNDER ACTIVE REVISION]</h5>\n";
-
-=cut
-
-  # main table
-
-  # prep table (6 columns )========================
-  print $fp "      <div><table class='cs-reps'>\n";
-  # prep table (6 columns )========================
-  # 2 header rows
-  # first header row
-  {
-    print $fp "        <tr>\n";
-
-    my $c0 = 'CS';
-    my $c1 = 'Number of Gray Tag Givers [1]';
-    my $c2 = 'Number of Living Grads [2]';
-    my $c3 = '% Grad Gray Tag Givers [3]';
-
-    print $fp "          <th rowspan='2' class='LD TD RD BD w75'>$c0</th>\n";
-    print $fp "          <th colspan='3' class='LD TD RD BD'>$c1</th>\n";
-    print $fp "          <th rowspan='2' class='LD TD RD BD w75'>$c2</th>\n";
-    print $fp "          <th rowspan='2' class='LD TD RD BD w75'>$c3</th>\n";
-    print $fp "        </tr>\n";
-  }
-
-  # second header row
-  {
-    print $fp "        <tr>\n";
-
-    my $c1 = 'Grads';
-    my $c2 = 'Non-grads';
-    my $c3 = 'Friends';
-
-    print $fp "          <th class='LD TD RD BD w75'>$c1</th>\n";
-    print $fp "          <th class='LD TD RD BD w75'>$c2</th>\n";
-    print $fp "          <th class='LD TD RD BD w75'>$c3</th>\n";
-    print $fp "        </tr>\n";
-  }
-
-  # $GREP_NS data rows
-  foreach my $c0 (1..24) {
-
-    my $c1 = $ghref->{$c0}{ngrads};
-    $c1 = '' if !$c1;
-    my $c2 = $ghref->{$c0}{nngrads};
-    $c2 = '' if !$c2;
-    my $c3 = $ghref->{$c0}{nfriends};
-    $c3 = '' if !$c3;
-
-    # num living grads
-    my $c4 = $phref->{$c0}{ngrads};
-    $c4 = '' if !$c4;
-
-    # % gray tag givers
-    my $c5 = '0.00';
-    if ($c1 && $c4) {
-      $c5 = sprintf "%6.2f", $c1 / $c4 * 100.;
-    }
-
-    my $cs = sprintf "CS-%02d", $c0;
-
-    print $fp "        <tr>\n";
-    print $fp "          ";
-    print $fp "<td class='LD C RD'>$cs</td>";
-
-    print $fp "<td class='C'>$c1</td>";
-    print $fp "<td class='C'>$c2</td>";
-    print $fp "<td class='C RD'>$c3</td>\n";
-    print $fp "<td class='C RD'>$c4</td>\n";
-    print $fp "<td class='RJ p25 RD'>$c5</td>\n";
-    print $fp "        </tr>\n";
-  }
-
-  my $wing = $ghref->{wing}{gtag};
-
-  {
-    my $c0 = 'Grand Total';
-
-    my $c1 = $ghref->{wing}{ngrads};
-    $c1 = '' if !$c1;
-    my $c2 = $ghref->{wing}{nngrads};
-    $c2 = '' if !$c2;
-    my $c3 = $ghref->{wing}{nfriends};
-    $c3 = '' if !$c3;
-
-    # num living grads
-    my $c4 = $phref->{wing}{ngrads};
-    $c4 = '' if !$c4;
-
-    # % gray tag givers
-    my $c5 = '0.00';
-    if ($c1 && $c4) {
-      $c5 = sprintf "%6.2f", $c1 / $c4 * 100.;
-    }
-
-    print $fp "        <tr>\n";
-    print $fp "          ";
-    print $fp "<td class='LD TD C RD BD'>$c0</td>";
-
-    print $fp "<td class='C TD BD'>$c1</td>";
-    print $fp "<td class='C TD BD'>$c2</td>";
-    print $fp "<td class='C TD BD RD'>$c3</td>";
-    print $fp "<td class='C TD BD RD'>$c4</td>\n";
-    print $fp "<td class='RJ p25 TD BD RD'>$c5</td>\n";
-
-    print $fp "        </tr>\n";
-  }
-
-  # any footnotes
-
-  print $fp "    <tr>\n";
-  print $fp "      <td colspan='$nc' class='L0 B0 R0 LJ'>\n";
-  print $fp "        <p>Notes:</p>\n";
-  print $fp "        <ol>\n";
-  print $fp "          <li>$GREP_noteH</li>\n";
-  print $fp "          <li>$GREP_noteJ</li>\n";
-  print $fp "          <li>$GREP_noteO</li>\n";
-
-  if ($wing) {
-    my $s = $wing > 1 ? 's' : '';
-    print $fp "          <li>Includes $wing gift$s not yet assigned to a squadron.</li>\n";
-  }
-
-  print $fp "        </ol>\n";
-
-  print $fp "      </td>\n";
-  print $fp "    </tr>\n";
-
-  # end prep table ================================
-  print $fp "    </table></div>\n";
-  # end prep table ================================
-
-  # end page
-  print $fp "  </body>\n";
-  print $fp "</html>\n";
-
-} # write_endowment_gtags_report
-
 sub write_endowment_part_report {
   my $aref = shift @_;
   my $phref      = $aref->{phref};
@@ -1244,7 +1014,7 @@ HERE
   print $fp "        <p>Notes:</p>\n";
   print $fp "        <ol>\n";
   print $fp "          <li>$GREP_noteK</li>\n";
-  print $fp "          <li>$GREP_noteJ</li>\n";
+  print $fp "          <li>$G::GREP_noteJ</li>\n";
   print $fp "          <li>$GREP_noteI</li>\n";
 
   #print $fp "          <li>$GREP_noteG</li>\n";

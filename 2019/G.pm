@@ -43,6 +43,8 @@ our $use_cloud      = 0;
 our $nonewpics      = 0;
 our @cmates;
 our %cmate;
-
+our $GREP_noteH;
+our $GREP_noteJ;
+our $GREP_noteO;
 # all modules must return a true value
 1;
