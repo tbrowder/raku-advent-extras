@@ -80,8 +80,6 @@ use USAFA_Tweet;
 use USAFA_SiteNews;
 
 # to do: make more general to handle input/output by squadrons (1-24)
-# pre-announce special subroutine so we don't have to use parentheses
-sub dequote;
 
 # some global objects
 my %cmate = %CL::mates;
@@ -847,75 +845,6 @@ if ($nonewpics) {
 }
 
 #### subroutines ####
-
-sub dequote {
-  # from the Perl Cookbook, Recipe 1.11, Indenting Here Documents
-  #
-  # example usage:
-  #
-  #   sub dequote;
-  #   my $s = dequote<<"   HERE"; <= note three leading spaces "   "
-  #        blah
-  #         blah
-  #      HERE                     <= note three leading spaces '   '
-  #
-  #   one may also use constant leading symbols like this:
-  #
-  #        @@@ int
-  #        @@@ runops() {
-  #        @@@     SAVEI32(runlevel);
-  #        @@@     runlevel++;
-  #        @@@     while ( op = (*op->op_ppaddr)() ) ;
-  #        @@@     TAINT_NOT;
-  #        @@@     return 0;
-  #
-  # note in book:
-  #
-  # Be warned: all the patterns in this recipe use \s, which will
-  # also match newlines. This means they will remove any blank
-  # lines in your here document. If you don't want this, replace
-  # \s with [^\S\n] in the patterns.
-
-  local $_ = shift;
-  my ($white, $leader);  # common whitespace and common leading string
-  if (m{
-	 \A                   # start of line
-	 [^\S\n] *            # 0 or more whitespace chars
-	 (?:                  # begin first non-remembered grouping
-	   (                  #   begin save buffer $1
-	     [^\w\s]          #     one byte neither space nor word
-	     +                #     1 or more of such
-	   )                  #   end save buffer $1
-	   ( [^\S\n] * )      #   put 0 or more white in buffer $2
-	   .* \n              #   match through the end of first line
-	 )                    # end of first grouping
-	 (?:                  # begin second non-remembered grouping
-	   [^\S\n] *          #   0 or more whitespace chars
-	   \1                 #   whatever string is destined for $1
-	   \2 ?               #   what'll be in $2, but optionally
-	   .* \n              #   match through the end of the line
-	 ) +                  # now repeat that group idea 1 or more
-	 \z                   # until the end of the line
-     }x
-     )
-    {
-      ($white, $leader) = ($2, quotemeta($1));
-    }
-    else {
-      ($white, $leader) = (/^(\s+)/, '');
-    }
-
-  s{
-     \A                       # start of each line (due to /m)
-     [^\S\n] *                # any amount of leading whitespace
-     ?                        #   but minimally matched
-     $leader                  # our quoted, saved per-line leader
-     (?:                      # begin unremembered grouping
-       $white                 #    the same amount
-     ) ?                      # optionalize in case EOL after leader
-   }{}xgm;
-
-} # dequote
 
 sub Build_web_pages {
   my $maint = shift @_;
