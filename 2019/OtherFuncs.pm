@@ -13,6 +13,124 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
 
+sub get_toms_google_contacts :Export(:DEFAULT) {
+
+  # the serializer module
+  use Data::Serializer::Raw;
+
+  # set Data::Dumper vars for useful output
+  $Data::Dumper::Indent   = 1;
+  $Data::Dumper::Sortkeys = 1;
+
+  # need a google contact object
+  my $google = WWW::Google::Contacts->new(
+					  username => $MySECRETS::username,
+					  password => $MySECRETS::password,
+					 );
+
+  # set this true to collect group info only; otherwise, contact data is also collected
+  Readonly my $groups_only => 0;
+
+  Readonly my $last => 0; # number of data points to dump or collect (set to 0
+                          # for normal use)
+
+  my $dump  = 0; # collect raw contact and group data to see what is received
+  my $debug = 0; # dump the resulting collected hash
+
+  # three hashes to collect info
+  my %contact = (); # contacts by id => { ...data...}
+  my %email   = (); # check for duplicate e-mails
+  my %group   = (); # groups by name => id
+
+  my $idx; # for counting contacts and groups
+
+  goto GROUPS
+    if $groups_only;
+
+  # get my existing contacts
+  my $contacts = $google->contacts;
+  $idx  = 0;
+  print "==== dumping $last contacts ====\n" if $dump;
+  while (my $c = $contacts->next) {
+    ++$idx;
+
+    # debug
+    if ($dump) {
+      print Dumper($c);
+      last if $idx == $last;
+    }
+    next if $dump;
+
+    # get in one chunk
+    GMAIL::insert_google_contact($c, \%contact, \%email);
+    last if $idx == $last;
+    next;
+  }
+  print "==== end dumping $last contacts ====\n" if $dump;
+
+  #print Dumper($contacts);
+
+ GROUPS:
+
+  # get my existing groups
+  my $groups = $google->groups;
+  $idx = 0;
+  print "==== dumping $last groups ====\n" if $dump;
+  while (my $g = $groups->next) {
+    ++$idx;
+    if ($dump) {
+      print Dumper($g);
+      last if $idx == $last;
+    }
+
+    # get in one chunk
+    GMAIL::insert_google_group($g, \%group);
+    last if $idx == $last;
+    next;
+  }
+  print "==== end dumping $last groups ====\n" if $dump;
+
+  die "debug exit" if $dump;
+
+  #print Dumper($groups);
+  my @fils;
+
+  # always get groups
+  {
+    # serialize the hashes (use '::Raw' for testing)
+    my $gfil = $GMAIL::gfil;
+    @fils = ($gfil);
+    unlink @fils;
+    my $g_serial = Data::Serializer::Raw->new(); #file => 'g.serial');
+    $g_serial->store(\%group, $gfil);
+    push @G::ofils, (@fils);
+  }
+
+  if (!$groups_only) {
+    # serialize the hashes (use '::Raw' for testing
+    my $cfil = $GMAIL::cfil;
+    my $efil = $GMAIL::efil;
+    @fils = ($cfil, $efil);
+    unlink @fils;
+    my $c_serial = Data::Serializer::Raw->new(); #file => 'c.serial');
+    my $e_serial = Data::Serializer::Raw->new(); #file => 'e.serial');
+    $c_serial->store(\%contact, $cfil);
+    $e_serial->store(\%email, $efil);
+    push @G::ofils, (@fils);
+  }
+
+  if ($debug) {
+    print "==== dumping contacts ====\n";
+    print Dumper(\%contact);
+    print "==== dumping groups ====\n";
+    print Dumper(\%group);
+    print "==== dumping email ====\n";
+    print Dumper(\%email);
+
+  }
+
+} # get_toms_google_contacts
+
 sub build_sqdn_reps_pages :Export(:DEFAULT) {
 
   # build one page for each group
