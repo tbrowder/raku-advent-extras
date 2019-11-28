@@ -30,6 +30,7 @@ use Email::Valid;
 use lib ('.', './lib');
 
 use G; # global vars for port to Raku
+use OtherFuncs; # for subs moved from this file
 
 # for menus
 use WebSiteMenu;
