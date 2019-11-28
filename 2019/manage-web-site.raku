@@ -768,7 +768,9 @@ elsif ($map) {
     }
 
     my $n = @mr;
-    for (my $i = 0; $i < $n; ++$i) {
+    #for (my $i = 0; $i < $n; ++$i) {
+    my $i; # loop variable
+    loop ($i = 0; $i < $n; ++$i) {
       my $mr = $mr[$i];
       my $st = $st[$i];
       if ($debug) {
