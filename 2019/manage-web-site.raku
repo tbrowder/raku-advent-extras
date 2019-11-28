@@ -867,8 +867,10 @@ print "Normal end.\n";
 if ($web && @G::ofils) {
   print "See web output files in 'web-site/pages':\n";
   my @tfils = ();
-  foreach my $f (@G::ofils) {
-    next if $f =~ m{pages/};
+#  foreach my $f (@G::ofils) {
+  for @G::ofils -> $f {
+    #next if $f =~ m{pages/};
+    next if $f ~~ /pages/;
     push @tfils, $f;
   }
   if (@tfils) {
