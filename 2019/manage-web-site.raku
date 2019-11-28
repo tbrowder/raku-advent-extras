@@ -714,10 +714,10 @@ elsif ($map) {
 	  reps
       >;
   my %use;
-  @use{@use} = ();
+  %use{@use} = ();
 
-  my @styp
-    = <
+  my %styp
+    = set <
 	  sqdn
 	  sqdn_show
 	  grp
@@ -727,11 +727,9 @@ elsif ($map) {
 	  ctry
 	  ctry_show
        >;
-  my %styp;
-  @styp{@styp} = ();
 
 
-  delete $use{debug} if !$debug;
+  delete %use{debug} if !$debug;
 
   my %reps;
   U65::get_all_reps(\%reps);
