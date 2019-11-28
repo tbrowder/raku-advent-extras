@@ -13,7 +13,17 @@ use lib ('.', './lib');
 use G;
 use CLASSMATES_FUNCS qw(:all);
 
-#sub Build_web_pages :Export(:DEFAULT) {
+#sub Build_web_pages :Export(:DEFAULT)
+
+sub commify :Export(:DEFAULT) {
+  # from Perl Cookbook Recipe 2.17 (with mods)
+  my $string = shift @_;
+  return $string if !defined $string;
+
+  my $text = reverse $string;
+  $text =~ s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
+  return scalar reverse $text;
+} # commify
 
 sub build_reps_status_page :Export(:DEFAULT) {
 
