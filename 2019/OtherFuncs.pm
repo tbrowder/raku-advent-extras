@@ -13,6 +13,238 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
 
+sub build_sqdn_reps_pages :Export(:DEFAULT) {
+
+  # build one page for each group
+  my @s;
+  $s[1] = [1..6];
+  $s[2] = [7..12];
+  $s[3] = [13..18];
+  $s[4] = [19..24];
+
+  my (@gname, @gcs);
+  $gname[1] = 'First';
+  $gname[2] = 'Second';
+  $gname[3] = 'Third';
+  $gname[4] = 'Fourth';
+  $gcs[1] = '(CS 1-6)';
+  $gcs[2] = '(CS 7-12)';
+  $gcs[3] = '(CS 13-18)';
+  $gcs[4] = '(CS 19-24)';
+
+  foreach my $g (1..4) {
+    my $fil = "./web-site/pages/cs-reps-group-${g}.html";
+    open my $fp, '>', $fil
+      or die "$fil: $!";
+
+    my $title = sprintf("%s Group %s", $gname[$g], $gcs[$g]);
+    print_html5_header($fp);
+    print_html_std_head_body_start($fp,
+				   {
+				    title => $title,
+				    level => 1,
+				   });
+
+    # get max number of alternates for this group
+    my @sqdns = @{$s[$g]};
+    my $ns = @sqdns;
+
+    my $nalts = 0;
+    for (my $i = 0; $i < $ns; ++$i) {
+      my $snum = $sqdns[$i];
+      # up to three alternates
+      my $n = 0;
+      ++$n if (exists $U65::rep_for_sqdn{$snum}{alt1} && $U65::rep_for_sqdn{$snum}{alt1});
+      ++$n if (exists $U65::rep_for_sqdn{$snum}{alt2} && $U65::rep_for_sqdn{$snum}{alt2});
+      ++$n if (exists $U65::rep_for_sqdn{$snum}{alt3} && $U65::rep_for_sqdn{$snum}{alt3});
+      $nalts = $n if
+	($n > $nalts);
+    }
+
+    print $fp <<"HERE";
+
+    <h2>Cadet Squadron Reps (* - Rep has TLS Certificates)</h2>
+    <h1>$title</h1>
+
+    <hr/>
+
+    <h2>Volunteers Needed. Contact <a href='mailto:tom.browder\@gmail.com'>Tom Browder</a></h2>
+
+HERE
+
+    print_cs_reps_table_header($fp, $nalts);
+
+    my $LT = '&lt;';
+    my $GT = '&gt;';
+
+    for (my $i = 0; $i < $ns; ++$i) {
+      my $snum = $sqdns[$i];
+      my $srep = exists $U65::rep_for_sqdn{$snum}{prim} ? $U65::rep_for_sqdn{$snum}{prim} : '';
+
+      my $mail   = '';
+      my $mailto = '';
+      my $name   = '(need volunteer)';
+      my $phones = '';
+      my $pic    = "<img src='../images/no-picture.jpg' alt='x' />";
+      my $L      = '';
+      my $R      = '';
+
+      # up to three alternates
+      my $srep1 = exists $U65::rep_for_sqdn{$snum}{alt1} ? $U65::rep_for_sqdn{$snum}{alt1} : '';
+      my $srep2 = exists $U65::rep_for_sqdn{$snum}{alt2} ? $U65::rep_for_sqdn{$snum}{alt2} : '';
+      my $srep3 = exists $U65::rep_for_sqdn{$snum}{alt3} ? $U65::rep_for_sqdn{$snum}{alt3} : '';
+
+      # check for deceased sreps
+      foreach my $sr ($srep, $srep1, $srep2, $srep3) {
+	if ($sr && $CL::mates{$sr}{deceased}) {
+	  print "ERROR: CS rep key '$sr' is now deceased!\n";
+	  die   "  You must update modules 'CSReps.pm' and 'U65.pm'.\n"
+        }
+      }
+      my $mail1   = '';
+      my $mailto1 = '';
+      my $name1   = '';
+      my $phones1 = '';
+      my $pic1    = "";
+      my $L1      = '';
+      my $R1      = '';
+
+      my $mail2   = '';
+      my $mailto2 = '';
+      my $name2   = '';
+      my $phones2 = '';
+      my $pic2    = "";
+      my $L2      = '';
+      my $R2      = '';
+
+      my $mail3   = '';
+      my $mailto3 = '';
+      my $name3   = '';
+      my $phones3 = '';
+      my $pic3    = "";
+      my $L3      = '';
+      my $R3      = '';
+
+      if ($srep) {
+	$name   = assemble_name(\%CL::mates, $srep, {srep => 1, informal => 1});
+	$mail   = "$CL::mates{$srep}{email}";
+	$mailto = "mailto:$mail";
+	$pic    = "<img src='../images/${srep}.jpg' alt='x' />";
+        $L      = $LT;
+        $R      = $GT;
+	if ($CSReps::rep{$srep}{phone}) {
+	  my $h = $CL::mates{$srep}{home_phone};
+	  my $c = $CL::mates{$srep}{cell_phone};
+	  $h = "$h (H)" if $h;
+	  $c = "$c (M)" if $c;
+	  $phones .= "<h5>$h</h5>" if $h;
+	  $phones .= "<h5>$c</h5>" if $c;
+	}
+      }
+
+      if ($srep1) {
+	$name1   = assemble_name(\%CL::mates, $srep1, {srep => 1, informal => 1});
+	$mail1   = "$CL::mates{$srep1}{email}";
+	$mailto1 = "mailto:$mail1";
+	$pic1    = "<img src='../images/${srep1}.jpg' alt='x' />";
+        $L1      = $LT;
+        $R1      = $GT;
+	if ($CSReps::rep{$srep1}{phone}) {
+	  my $h = $CL::mates{$srep1}{home_phone};
+	  my $c = $CL::mates{$srep1}{cell_phone};
+	  $h = "$h (H)" if $h;
+	  $c = "$c (M)" if $c;
+	  $phones1 .= "<h5>$h</h5>" if $h;
+	  $phones1 .= "<h5>$c</h5>" if $c;
+	}
+      }
+
+      if ($srep2) {
+	$name2   = assemble_name(\%CL::mates, $srep2, {srep => 1, informal => 1});
+	$mail2   = "$CL::mates{$srep2}{email}";
+	$mailto2 = "mailto:$mail2";
+	$pic2    = "<img src='../images/${srep2}.jpg' alt='x' />";
+        $L2      = $LT;
+        $R2      = $GT;
+	if ($CSReps::rep{$srep2}{phone}) {
+	  my $h = $CL::mates{$srep2}{home_phone};
+	  my $c = $CL::mates{$srep2}{cell_phone};
+	  $h = "$h (H)" if $h;
+	  $c = "$c (M)" if $c;
+	  $phones2 .= "<h5>$h</h5>" if $h;
+	  $phones2 .= "<h5>$c</h5>" if $c;
+	}
+      }
+
+      if ($srep3) {
+	$name3   = assemble_name(\%CL::mates, $srep3, {srep => 1, informal => 1});
+	$mail3   = "$CL::mates{$srep3}{email}";
+	$mailto3 = "mailto:$mail3";
+	$pic3    = "<img src='../images/${srep3}.jpg' alt='x' />";
+        $L3      = $LT;
+        $R3      = $GT;
+	if ($CSReps::rep{$srep3}{phone}) {
+	  my $h = $CL::mates{$srep3}{home_phone};
+	  my $c = $CL::mates{$srep3}{cell_phone};
+	  $h = "$h (H)" if $h;
+	  $c = "$c (M)" if $c;
+	  $phones3 .= "<h5>$h</h5>" if $h;
+	  $phones3 .= "<h5>$c</h5>" if $c;
+	}
+      }
+
+      my $last_row = ($i < $ns - 1) ? undef : 0;
+
+      print_cs_reps_table_data($fp,
+			       $nalts,
+			       $snum,
+
+			       $mail,
+			       $mailto,
+			       $name,
+			       $phones,
+			       $pic,
+			       $L,
+			       $R,
+
+			       $mail1,
+			       $mailto1,
+			       $name1,
+			       $phones1,
+			       $pic1,
+			       $L1,
+			       $R1,
+
+			       $mail2,
+			       $mailto2,
+			       $name2,
+			       $phones2,
+			       $pic2,
+			       $L2,
+			       $R2,
+
+			       $mail3,
+			       $mailto3,
+			       $name3,
+			       $phones3,
+			       $pic3,
+			       $L3,
+			       $R3,
+
+			       $last_row,
+			      );
+    }
+
+    print $fp <<"HERE3";
+    </table>
+  </body>
+</html>
+HERE3
+
+  }
+
+} # build_sqdn_reps_pages
+
 sub collect_stats_and_build_rosters :Export(:DEFAULT) {
   my $sref       = shift @_; # \%stats
   my $nref       = shift @_; # \@n;
