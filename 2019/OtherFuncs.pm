@@ -14,6 +14,34 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
 
+sub print_cs_reps_table_header :Export(:DEFAULT) {
+  my $fp    = shift @_;
+  my $nalts = shift @_;
+
+  {
+    print $fp <<"HERE";
+    <!-- one table, 3 to 9 columns -->
+    <table class='cs-reps'>
+      <tr>
+        <th class='NB LD BD TD'>CS</th>
+        <th class='NB BD TD'>Representative</th>
+        <th class='NB RD BD TD'>Mug</th>
+HERE
+  }
+
+  if ($nalts > 0) {
+    print $fp "        <th class='NB BD'>1st Alternate</th>     <th class='NB RD BD'>Mug</th>\n";
+  }
+  if ($nalts > 1) {
+    print $fp "        <th class='NB BD'>2nd Alternate</th>     <th class='NB RD BD'>Mug</th>\n";
+  }
+  if ($nalts > 2) {
+    print $fp "        <th class='NB BD'>3rd Alternate</th>     <th class='NB RD BD'>Mug</th>\n";
+  }
+
+  print $fp "      </tr>\n";
+} #  print_cs_reps_table_header
+
 sub write_mailman_list :Export(:DEFAULT) {
   my $cref     = shift @_;
   my $typ      = shift @_;
