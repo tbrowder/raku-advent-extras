@@ -82,7 +82,7 @@ use USAFA_SiteNews;
 # to do: make more general to handle input/output by squadrons (1-24)
 
 # some global objects
-my %cmate = %CL::mates;
+%G::cmate = %CL::mates;
 my $GREP_file = './.grep_data.storable';
 $G::GREP_pledge_form = './pages/Class-of-1965-50th-Reunion-Pledge-Form.pdf';
 my $GREP_update_asof = '';
@@ -117,7 +117,7 @@ my $GREP_noteO = '% Grad Gray Tag Givers = (num grad gray tag givers) &divide; (
 my $GREP_noteP = 'Gifts given for the entire class.';
 my $GREP_noteQ = 'Lost grads are assumed to be living.';
 
-@G::cmates  = (sort keys %cmate);
+@G::cmates  = (sort keys %G::cmate);
 my $ncmates = @G::cmates;
 
 my $orig_pics_dir = 'pics-pages';
@@ -542,15 +542,15 @@ foreach my $arg (@ARGV) {
   }
   elsif ($arg =~ m{\A -so}xms) {
     # sort keys, exit from there
-    sort_show_keys(\%cmate);
+    sort_show_keys(\%G::cmate);
   }
   elsif ($arg =~ m{\A -rp}xms) {
     # raw picture stats, exit from there
-    show_raw_picture_stats(\%cmate);
+    show_raw_picture_stats(\%G::cmate);
   }
   elsif ($arg =~ m{\A -tu}xms) {
     # list nobct1961s, exit from there
-    show_nobct1961s(\%cmate);
+    show_nobct1961s(\%G::cmate);
   }
   elsif ($arg =~ m{\A -deb}xms) {
     $debug = 1;
@@ -647,12 +647,12 @@ elsif ($restrict) {
   show_restricted_data_info();
 }
 elsif ($mail) {
-  write_mailman_list(\%cmate, $mail_typ, \@G::ofils);
+  write_mailman_list(\%G::cmate, $mail_typ, \@G::ofils);
 }
 elsif ($geo) {
   print "# Building geo request data...\n";
   CLASSMATES_FUNCS::print_geo_data($USAFA1965, \@G::ofils,
-				   \@G::cmates, \%cmate,
+				   \@G::cmates, \%G::cmate,
 				  );
   print "Move up to dir '../../../../mydomains' with copy of\n";
   print "  the output file to continue.\n";
@@ -664,7 +664,7 @@ elsif ($map) {
   # subtypes (e.g., state => one for each state and country, CS => one
   # for each CS).
   my %map = (); # mapref, keyed by map types (and subkeys)
-  GEO_MAPS_USAFA::get_geocode_submap_keys(\%cmate, \%geodata, \%map);
+  GEO_MAPS_USAFA::get_geocode_submap_keys(\%G::cmate, \%geodata, \%map);
 
   my @use
     = qw(
@@ -731,7 +731,7 @@ elsif ($map) {
       GEO_MAPS_USAFA::print_map_data({
 				      type      => $USAFA1965,
 				      ofilsref  => \@G::ofils,
-				      cmateref  => \%cmate,
+				      cmateref  => \%G::cmate,
 				      map       => $mr,
 				      mtype     => $mt,
 				      subtype   => $st,
@@ -862,221 +862,6 @@ sub build_templated_cgi_files {
 } # build_templated_cgi_files
 
 =cut
-
-sub write_memorial_rolls {
-  my $href = shift @_;
-  die "bad arg \$href"
-    if (!defined $href || ref($href) ne 'HASH');
-
-  my $delete         = $href->{delete}     || 0;
-  $G::force          = $href->{force}      || 0;
-  my $CL_has_changed = $href->{CL_has_changed};
-
-  die "FATAL: CL_has_changed has NOT been defined"
-    if (!defined $CL_has_changed);
-
-  # don't continue if 'CL.pm' has not changed (unless $G::force is
-  # defined)
-  if (!$CL_has_changed) {
-    return if !$G::force;
-  }
-
-  my $odir  = './site-public-downloads';
-  die "No such dir '$odir'" if !-d $odir;
-
-  # delete old files if desired
-  if ($delete) {
-    my @fils = glob("$odir/*.xls");
-    unlink @fils;
-  }
-
-  my $SQ = shift @_;
-  $SQ = 0 if !defined $SQ;
-
-  # need curr date for file names
-  my $fdate = get_iso_date(); # 'yyyy-mm-dd'
-
-  my %datesort = ();
-
-  my ($f, $fp, @data);
-
-=pod
-
-  # for this function only, manually add Lawrence Paul to the database here
-     'paul-lg'
-     => {
-         # sqdn(s) and preferred sqdn
-         sqdn               => '',
-         preferred_sqdn     => '',
-         # name
-         last               => "Paul",
-         first              => 'Lawrence',
-         middle             => "Glenn",
-         suff               => '',
-         nickname           => '',
-         deceased           => '1961-08-03', # use 'yyyy-mm-dd'
-         aog_addressee      => '';
-         highest_rank       => 'C4C',
-         aog_status         => '',
-	 },
-
-=cut
-
-  # define only the fields needed or referenced
-  $cmate{'paul-lg'}{sqdn}           = '';
-  $cmate{'paul-lg'}{preferred_sqdn} = '';
-
-  $cmate{'paul-lg'}{last}          = 'Paul';
-  $cmate{'paul-lg'}{first}         = 'Lawrence';
-  $cmate{'paul-lg'}{middle}        = 'Glenn';
-  $cmate{'paul-lg'}{suff}          = '';
-  $cmate{'paul-lg'}{nickname}      = '';
-  $cmate{'paul-lg'}{deceased}      = '1961-08-03';
-  $cmate{'paul-lg'}{aog_addressee} = '';
-  $cmate{'paul-lg'}{highest_rank}  = 'C4C';
-  $cmate{'paul-lg'}{aog_status}    = '';
-
-  my @cmates = (sort keys %cmate);
-
-  # xls col (field) names
-  my @fields = qw(NAME WAR-MEM SQDN DECEASED);
-
-  my $xls_sink = Spreadsheet::DataToExcel->new;
-
-  #=== alpha sort
-  $f = "$odir/deceased-classmates-by-name-${fdate}.xls";
-  push @G::ofils, $f;
-  open $fp, '>', $f
-    or die "$f: $!";
-
-  # 2-d array for xls:
-  @data = ();
-  # always have a header row
-  push @data, [@fields];
-
-  foreach my $n (@cmates) {
-    next if (!$cmate{$n}{deceased});
-
-    my $iso_date = $cmate{$n}{deceased};
-
-    my $date     = iso_to_date($iso_date, 'ordinal');
-
-    my $war_hero = exists $U65::hero{$n} ? '(War Memorial)' : '';
-
-    my ($title, $status) = U65::get_rank_and_status(\%cmate, $n);
-
-    my $service  = $cmate{$n}{service};
-
-    # all sqdns
-    #my $sqdn     = $cmate{$n}{preferred_sqdn};
-    my $sqdns = $cmate{$n}{sqdn};
-    my $sqdn = '';
-    if ($sqdns) {
-      my @sqdns = (sort { $a <=> $b } U65::get_sqdns($sqdns));
-      $sqdn = shift @sqdns;
-      if (@sqdns) {
-	my $ns = shift @sqdns;
-	die "???" if @sqdns;
-	$sqdn .= ", $ns";
-      }
-      $sqdn = "CS $sqdn";
-    }
-    my $name     = U65::get_full_name(\%cmate, $n);
-
-    if (!$title) {
-      $title = 'Mr.';
-    }
-
-=pod
-
-    if ($status && $war_hero) {
-      print "FATAL: '$name'\n";
-      print "       war hero: $war_hero\n";
-      print "       status:   $status\n";
-      print "       title:    $title\n";
-      die "war hero not a grad?";
-    }
-
-=cut
-
-    my $s = $war_hero ? $war_hero : $status;
-
-    my @d = ("$title $name", $s, "$sqdn", "$date");
-    push @data, [@d];
-
-    my $csvline = "$title $name;$s;$sqdn;$date\n";
-#    print $fp $csvline;
-
-    die "???" if exists $datesort{$iso_date}{$n};
-    $datesort{$iso_date}{$n} = [@d];
-
-  }
-
-  #=== write the Excel file ===
-  $xls_sink->dump($fp, \@data, {
-				text_wrap => 0,
-				center_first_row => 1,
-			       })
-    or die "Error: " . $xls_sink->error;
-  close $fp;
-  #=== end write the Excel file ===
-
-  # now write sorted by date
-  $f = "$odir/deceased-classmates-by-date-deceased-${fdate}.xls";
-  push @G::ofils, $f;
-  open $fp, '>', $f
-    or die "$f: $!";
-
-  # 2-d array for xls:
-  @data = ();
-  # always have a header row
-  push @data, [@fields];
-
-  my @dates = (sort keys %datesort);
-  foreach my $d (@dates) {
-    my @n = (sort keys %{$datesort{$d}});
-    foreach my $n (@n) {
-      #my $csvline = $datesort{$d}{$n};
-      #my @d = split(';', $csvline);
-      push @data, [@{$datesort{$d}{$n}}];
-      # print $fp $csvline;
-    }
-  }
-
-  #=== write the Excel file ===
-  $xls_sink->dump($fp, \@data, {
-				text_wrap => 0,
-				center_first_row => 1,
-			       })
-    or die "Error: " . $xls_sink->error;
-  close $fp;
-  #=== end write the Excel file ===
-
-=pod
-
-  # now sqdn sorted by date
-  $SQ = 23;
-  my $sq = sprintf "CS-%02d", $SQ;
-
-  $f = sprintf "$sq-deceased-classmates-by-date.csv";
-  push @{$oref}, $f;
-  open $fp, '>', $f
-    or die "$f: $!";
-
-  foreach my $d (@dates) {
-    my @n = (sort keys %{$datesort{$d}});
-    foreach my $n (@n) {
-      my $csvline = $datesort{$d}{$n};
-      next if (($csvline !~ m{CS: \s* $SQ }xmsi)
-	       && ($csvline !~ m{CS: \w \* $SQ \z}xmsi));
-      print $fp $csvline;
-    }
-  }
-  close $fp;
-
-=cut
-
-} # write_memorial_rolls
 
 sub build_class_officers_pages {
   # two pages
@@ -1726,9 +1511,9 @@ sub show_restricted_data_info {
   my %sq = ();
 
   foreach my $c (@G::cmates) {
-    my $sd    = $cmate{$c}{hide_data};
+    my $sd    = $G::cmate{$c}{hide_data};
     next if (!$sd);
-    my $sqdns = $cmate{$c}{sqdn};
+    my $sqdns = $G::cmate{$c}{sqdn};
     my @sqdns = U65::get_sqdns($sqdns);
     foreach my $s (@sqdns) {
       $sq{$s}{$c} = $sd;
@@ -2027,17 +1812,17 @@ sub gen_tlspm {
   say $fp "  = (";
 
   foreach my $k (@G::cmates) {
-    my $deceased = $cmate{$k}{deceased};
+    my $deceased = $G::cmate{$k}{deceased};
     next if $deceased;
 
-    my $cert_email = $cmate{$k}{cert_email};
+    my $cert_email = $G::cmate{$k}{cert_email};
     next if !$cert_email;
 
     my $namekey = $k;
-    my $name    = U65::get_full_name(\%cmate, $k);
+    my $name    = U65::get_full_name(\%G::cmate, $k);
     my $is_rep  = exists $CSReps::rep{$k} ? 1 : 0;
-    my $sqdn    = U65::get_last_sqdn($cmate{$k}{sqdn});
-    my $email   = $cmate{$k}{email};
+    my $sqdn    = U65::get_last_sqdn($G::cmate{$k}{sqdn});
+    my $email   = $G::cmate{$k}{email};
 
     # special
     $is_rep = 1 if ($namekey eq 'browder-tm');

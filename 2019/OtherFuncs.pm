@@ -15,6 +15,221 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
 
+sub write_memorial_rolls :Export(:DEFAULT) {
+  my $href = shift @_;
+  die "bad arg \$href"
+    if (!defined $href || ref($href) ne 'HASH');
+
+  my $delete         = $href->{delete}     || 0;
+  $G::force          = $href->{force}      || 0;
+  my $CL_has_changed = $href->{CL_has_changed};
+
+  die "FATAL: CL_has_changed has NOT been defined"
+    if (!defined $CL_has_changed);
+
+  # don't continue if 'CL.pm' has not changed (unless $G::force is
+  # defined)
+  if (!$CL_has_changed) {
+    return if !$G::force;
+  }
+
+  my $odir  = './site-public-downloads';
+  die "No such dir '$odir'" if !-d $odir;
+
+  # delete old files if desired
+  if ($delete) {
+    my @fils = glob("$odir/*.xls");
+    unlink @fils;
+  }
+
+  my $SQ = shift @_;
+  $SQ = 0 if !defined $SQ;
+
+  # need curr date for file names
+  my $fdate = get_iso_date(); # 'yyyy-mm-dd'
+
+  my %datesort = ();
+
+  my ($f, $fp, @data);
+
+=pod
+
+  # for this function only, manually add Lawrence Paul to the database here
+     'paul-lg'
+     => {
+         # sqdn(s) and preferred sqdn
+         sqdn               => '',
+         preferred_sqdn     => '',
+         # name
+         last               => "Paul",
+         first              => 'Lawrence',
+         middle             => "Glenn",
+         suff               => '',
+         nickname           => '',
+         deceased           => '1961-08-03', # use 'yyyy-mm-dd'
+         aog_addressee      => '';
+         highest_rank       => 'C4C',
+         aog_status         => '',
+	 },
+
+=cut
+
+  # define only the fields needed or referenced
+  $G::cmate{'paul-lg'}{sqdn}           = '';
+  $G::cmate{'paul-lg'}{preferred_sqdn} = '';
+
+  $G::cmate{'paul-lg'}{last}          = 'Paul';
+  $G::cmate{'paul-lg'}{first}         = 'Lawrence';
+  $G::cmate{'paul-lg'}{middle}        = 'Glenn';
+  $G::cmate{'paul-lg'}{suff}          = '';
+  $G::cmate{'paul-lg'}{nickname}      = '';
+  $G::cmate{'paul-lg'}{deceased}      = '1961-08-03';
+  $G::cmate{'paul-lg'}{aog_addressee} = '';
+  $G::cmate{'paul-lg'}{highest_rank}  = 'C4C';
+  $G::cmate{'paul-lg'}{aog_status}    = '';
+
+  my @cmates = (sort keys %G::cmate);
+
+  # xls col (field) names
+  my @fields = qw(NAME WAR-MEM SQDN DECEASED);
+
+  my $xls_sink = Spreadsheet::DataToExcel->new;
+
+  #=== alpha sort
+  $f = "$odir/deceased-classmates-by-name-${fdate}.xls";
+  push @G::ofils, $f;
+  open $fp, '>', $f
+    or die "$f: $!";
+
+  # 2-d array for xls:
+  @data = ();
+  # always have a header row
+  push @data, [@fields];
+
+  foreach my $n (@cmates) {
+    next if (!$G::cmate{$n}{deceased});
+
+    my $iso_date = $G::cmate{$n}{deceased};
+
+    my $date     = iso_to_date($iso_date, 'ordinal');
+
+    my $war_hero = exists $U65::hero{$n} ? '(War Memorial)' : '';
+
+    my ($title, $status) = U65::get_rank_and_status(\%G::cmate, $n);
+
+    my $service  = $G::cmate{$n}{service};
+
+    # all sqdns
+    #my $sqdn     = $cmate{$n}{preferred_sqdn};
+    my $sqdns = $G::cmate{$n}{sqdn};
+    my $sqdn = '';
+    if ($sqdns) {
+      my @sqdns = (sort { $a <=> $b } U65::get_sqdns($sqdns));
+      $sqdn = shift @sqdns;
+      if (@sqdns) {
+	my $ns = shift @sqdns;
+	die "???" if @sqdns;
+	$sqdn .= ", $ns";
+      }
+      $sqdn = "CS $sqdn";
+    }
+    my $name     = U65::get_full_name(\%G::cmate, $n);
+
+    if (!$title) {
+      $title = 'Mr.';
+    }
+
+=pod
+
+    if ($status && $war_hero) {
+      print "FATAL: '$name'\n";
+      print "       war hero: $war_hero\n";
+      print "       status:   $status\n";
+      print "       title:    $title\n";
+      die "war hero not a grad?";
+    }
+
+=cut
+
+    my $s = $war_hero ? $war_hero : $status;
+
+    my @d = ("$title $name", $s, "$sqdn", "$date");
+    push @data, [@d];
+
+    my $csvline = "$title $name;$s;$sqdn;$date\n";
+#    print $fp $csvline;
+
+    die "???" if exists $datesort{$iso_date}{$n};
+    $datesort{$iso_date}{$n} = [@d];
+
+  }
+
+  #=== write the Excel file ===
+  $xls_sink->dump($fp, \@data, {
+				text_wrap => 0,
+				center_first_row => 1,
+			       })
+    or die "Error: " . $xls_sink->error;
+  close $fp;
+  #=== end write the Excel file ===
+
+  # now write sorted by date
+  $f = "$odir/deceased-classmates-by-date-deceased-${fdate}.xls";
+  push @G::ofils, $f;
+  open $fp, '>', $f
+    or die "$f: $!";
+
+  # 2-d array for xls:
+  @data = ();
+  # always have a header row
+  push @data, [@fields];
+
+  my @dates = (sort keys %datesort);
+  foreach my $d (@dates) {
+    my @n = (sort keys %{$datesort{$d}});
+    foreach my $n (@n) {
+      #my $csvline = $datesort{$d}{$n};
+      #my @d = split(';', $csvline);
+      push @data, [@{$datesort{$d}{$n}}];
+      # print $fp $csvline;
+    }
+  }
+
+  #=== write the Excel file ===
+  $xls_sink->dump($fp, \@data, {
+				text_wrap => 0,
+				center_first_row => 1,
+			       })
+    or die "Error: " . $xls_sink->error;
+  close $fp;
+  #=== end write the Excel file ===
+
+=pod
+
+  # now sqdn sorted by date
+  $SQ = 23;
+  my $sq = sprintf "CS-%02d", $SQ;
+
+  $f = sprintf "$sq-deceased-classmates-by-date.csv";
+  push @{$oref}, $f;
+  open $fp, '>', $f
+    or die "$f: $!";
+
+  foreach my $d (@dates) {
+    my @n = (sort keys %{$datesort{$d}});
+    foreach my $n (@n) {
+      my $csvline = $datesort{$d}{$n};
+      next if (($csvline !~ m{CS: \s* $SQ }xmsi)
+	       && ($csvline !~ m{CS: \w \* $SQ \z}xmsi));
+      print $fp $csvline;
+    }
+  }
+  close $fp;
+
+=cut
+
+} # write_memorial_rolls
+
 sub update_email_database :Export(:DEFAULT) {
   my $aref = shift @_;
 
