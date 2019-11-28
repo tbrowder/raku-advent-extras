@@ -323,9 +323,9 @@ my $cshi = 24;
 $G::nonewpics = 0; # don't make new pics for the web if they don't exist
 @G::ofils     = (); # track output files written
 
-foreach my $arg (@ARGV) {
+for @*ARGS -> $arg {
 
-  my $val = undef;
+  my $val;
   my $idx = index $arg, '=';
   if ($idx >= 0) {
     $val = substr $arg, $idx+1;
