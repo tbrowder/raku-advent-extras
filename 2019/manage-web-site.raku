@@ -740,8 +740,9 @@ elsif ($map) {
 
   push @mt, 'debug' if ($debug);
 
-  foreach my $mt (@mt) {
-    next if (!exists $use{$mt});
+  #foreach my $mt (@mt) {
+  for @mt -> $mt {
+    next if !(%use{$mt}:exists);
 
     my $mtyp = $mt;
     $mtyp = 'all_show' if ($mt eq 'debug');
@@ -751,7 +752,7 @@ elsif ($map) {
 
     # some types have subtypes
     my @st;
-    if (exists $styp{$mt}) {
+    if !(%styp{$mt}:exists) {
       @mr = GEO_MAPS_USAFA::get_submap_refs($mapref, $mt, \@st);
     }
 
