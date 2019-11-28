@@ -653,7 +653,8 @@ for @*ARGS -> $arg {
 =pod
 
 if (!$frep) {
-  if (!-f $GREP_update_asof_file) {
+  #if (!-f $GREP_update_asof_file) {
+  if (!$GREP_update_asof_file.IO.f) {
     print "ERROR:  You need to update USAFA Endowment fund raising data\n";
     die   "        with the '-frep=YYYYMMDD' option.\n";
   }
@@ -737,7 +738,8 @@ elsif ($map) {
        >;
 
 
-  delete %use{debug} if !$debug;
+  #delete %use{debug} if !$G::debug;
+  %use<debug>:delete if !$G::debug;
 
   my %reps;
   #U65::get_all_reps(\%reps);
@@ -772,7 +774,7 @@ elsif ($map) {
     my $i; # loop variable
     loop ($i = 0; $i < $n; ++$i) {
       my $mr = @mr[$i];
-      my $st = st[$i];
+      my $st = @st[$i];
       if ($debug) {
 	print "DEBUG:  \$mr = '$mr'; \$st = '$st'\n";
       }
