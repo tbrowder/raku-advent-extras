@@ -15,6 +15,53 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
 
+sub update_email_database :Export(:DEFAULT) {
+  my $aref = shift @_;
+
+  Readonly my $dbfil     => './cgi-common/usafa1965-emails.sqlite';
+  Readonly my $dbfilsave => './cgi-common/usafa1965-emails.sqlite.save';
+
+  my $CL_has_changed = $aref->{CL_has_changed};
+  $CL_has_changed = 1 if (! -f $dbfil);
+
+  my $email_href  = $aref->{email_href} || die "FATAL error";
+  $G::force       = $aref->{force} || 0;
+
+  return if !$CL_has_changed;
+
+  # always create anew
+  if (-f $dbfil) {
+#copy $dbfil, $dbfilsave;
+    unlink $dbfil if (-f $dbfil);
+  }
+
+  my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfil","","",);
+  $dbh->do("PRAGMA foreign_keys = OFF");
+  $dbh->{AutoCommit} = 0;
+  $dbh->{RaiseError} = 1;
+
+  my $table = 'emails';
+  my $sth = $dbh->prepare(qq{
+    CREATE TABLE IF NOT EXISTS $table (
+      email           text primary key unique not null
+    );
+  });
+  $sth->execute();
+
+  my @ems = (keys %{$email_href});
+  foreach my $em (@ems) {
+    print "DEBUG: email = '$em'\n"
+      if $G::debug;
+    $sth = $dbh->prepare(qq{
+             INSERT INTO $table (email) VALUES('$em')
+    });
+    $sth->execute();
+  }
+  $dbh->commit();
+  $dbh->disconnect();
+
+} # update_email_database
+
 sub check_update_stats_db :Export(:DEFAULT) {
   my $stats          = shift @_; # hash of stats objects
   my $CL_has_changed = shift @_;
