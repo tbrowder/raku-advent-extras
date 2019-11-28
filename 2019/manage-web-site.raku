@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/env perl6
 
 use feature 'say';
 use strict;
