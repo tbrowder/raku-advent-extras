@@ -1,70 +1,55 @@
 #!/usr/bin/env perl6
 
-use feature 'say';
-use strict;
-use warnings;
+# for local Perl modules
+use lib:from<Perl5> ('.', 'lib');
 
-# for debugging:
-use Data::Dumper;
-use Carp;
-# end debugging
-
-use Readonly;
-use Text::CSV;
-use Spreadsheet::DataToExcel; # proper Excel file extensions are: *.xls, *.xlsx
-use DirHandle;
-use File::Glob qw(:globally);
-use File::Basename;
-use File::Copy;
-use Storable;
-use DBI;
-use Data::Table::Excel qw(xls2tables xlsx2tables);
-use RTF::Writer;
-
-# now we use GraphicsMagick instead of ImageMagick
-use Graphics::Magick;
-
-# for mail
-use Email::Valid;
-
-use lib ('.', './lib');
-
-use G; # global vars for port to Raku
-use OtherFuncs; # for subs moved from this file
-
-# for menus
-use WebSiteMenu;
-
-# for GEO info (google not working)
-use Geo::Ellipsoid;
-
+#=== Perl modules ===========================================
+# public modules available from CPAN
+use Graphics::Magick:from<Perl5>;# now we use GraphicsMagick instead of ImageMagick
+use Email::Valid:from<Perl5>; # for mail
+use Text::CSV:from<Perl5>;
+use Spreadsheet::DataToExcel:from<Perl5>; # proper Excel file extensions are: *.xls, *.xlsx
+use DirHandle:from<Perl5>;
+use Storable:from<Perl5>;
+use DBI:from<Perl5>;
+use Data::Table::Excel:from<Perl5> <xls2tables xlsx2tables>;
+use RTF::Writer:from<Perl5>;
+use WebSiteMenu:from<Perl5>; # for menus
+use WWW::Google::Contacts:from<Perl5>; # cpan
+# local modules
+use G:from<Perl5>; # global vars for port to Raku
+use OtherFuncs:from<Perl5>; # for subs moved from this file
 # for Google Email Contacts
-use WWW::Google::Contacts; # cpan
-use GMAIL; # mine
-
-# for my secrets
-use MySECRETS;
-
+use GMAIL:from<Perl5>; # mine
+use MySECRETS:from<Perl5>;
 # other data and functions
-use GEO_MAPS_USAFA;
-use GEO_DATA_USAFA; # auto-generated
-use CLASSMATES_FUNCS qw(:all);
+use GEO_MAPS_USAFA:from<Perl5>;
+use GEO_DATA_USAFA:from<Perl5>; # auto-generated
+use CLASSMATES_FUNCS:from<Perl5> <:all>;
+use CL:from<Perl5>;          # for classmate info
+use U65:from<Perl5>;         # for squadron info
+use AOG:from<Perl5>;         # for AOG csv general data
+use AOG2:from<Perl5>;        # for AOG csv format info
+use Stats:from<Perl5>;       # for collecting stats
+use CSReps:from<Perl5>;      # specific data for reps
+use Grads:from<Perl5>;       # official AOG grad count at graduation by CS
+use USAFA_Stats:from<Perl5>; # the database to keep stats in
+use U65Classmate:from<Perl5>; # for classmate data
+use U65Fields:from<Perl5>;    # need field data
+use MSDate:from<Perl5>;       # need data conversion
+use HONOREES:from<Perl5>;     # for 50th Reunion Project
+use PicFuncs:from<Perl5>;     # for picture and montage generation
+use USAFA_Tweet:from<Perl5>;
+use USAFA_SiteNews:from<Perl5>; # for e-mail
+use Geo::Ellipsoid:from<Perl5>;# for GEO info
+#=== end using Perl modules ===========================================
 
-use CL;          # for classmate info
-use U65;         # for squadron info
-use AOG;         # for AOG csv general data
-use AOG2;        # for AOG csv format info
-use Stats;       # for collecting stats
-use CSReps;      # specific data for reps
-use Grads;       # official AOG grad count at graduation by CS
-use USAFA_Stats; # the database to keep stats in
-
-use U65Classmate; # for classmate data
-use U65Fields;    # need field data
-use MSDate;       # need data conversion
-
-use HONOREES;     # for 50th Reunion Project
-use PicFuncs;     # for picture and montage generation
+#=== Raku modules ===========================================
+# public modules (available with the Raku installer 'zef')
+#use Geo::Ellipsoid;# for GEO info
+use File::Copy;
+use Data::Dump; # for debugging
+#=== end using Raku modules ===========================================
 
 # file for storing a hash
 my $decfil = './.deceased_hash_storage';
@@ -73,11 +58,6 @@ my $decfil = './.deceased_hash_storage';
 
 my %geodata = %GEO_DATA_USAFA::geodata;
 $G::tlspm = './cgi-common/TLSDATA.pm';
-
-# for Tweets
-use USAFA_Tweet;
-# for e-mail
-use USAFA_SiteNews;
 
 # to do: make more general to handle input/output by squadrons (1-24)
 
