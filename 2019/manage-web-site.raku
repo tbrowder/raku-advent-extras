@@ -334,12 +334,14 @@ for @*ARGS -> $arg {
 
   # execution modes ==============
   #  1
-  if ($arg =~ m{\A -cv}xms) {
+  #if ($arg =~ m{\A -cv}xms) {
+  if $arg ~~ /^ '-cv'/ {
     zero_modes();
     $cvt = 1;
   }
   #  2
-  elsif ($arg =~ m{\A -gen}xms) {
+  #elsif ($arg =~ m{\A -gen}xms) {
+  elsif $arg ~~ /^ '-gen'/ {
     zero_modes();
     $gen  = 1;
     $genS = 0;
@@ -352,37 +354,44 @@ for @*ARGS -> $arg {
 
   }
   #  3
-  elsif ($arg =~ m{\A -co}xms) {
+  #elsif ($arg =~ m{\A -co}xms) {
+  elsif $arg ~~ /^ '-co'/ {
     zero_modes();
     $collect = 1;
   }
   #  4
-  elsif ($arg =~ m{\A -we}xms) {
+  #elsif ($arg =~ m{\A -we}xms) {
+  elsif $arg ~~ /^ '-we'/ {
     zero_modes();
     $web = 1;
   }
   #  5
-  elsif ($arg =~ m{\A -war $}xms) {
+  #elsif ($arg =~ m{\A -war $}xms) {
+  elsif $arg ~~ /^ '-war'/ {
     zero_modes();
     $war = 1;
   }
   #  6
-  elsif ($arg =~ m{\A -lo}xms) {
+  #elsif ($arg =~ m{\A -lo}xms) {
+  elsif $arg ~~ /^ '-lo'/ {
     zero_modes();
     $logo = 1;
   }
   #  7/23
-  elsif ($arg =~ m{\A -sq}xms) {
+  #elsif ($arg =~ m{\A -sq}xms) {
+  elsif $arg ~~ /^ '-sq'/ {
     zero_modes();
     die "Undefined arg value for arg '$arg'" if !defined $val;
-    if ($val !~ /[0-9]+/) {
+    #if ($val !~ /[0-9]+/) {
+    if $val !~~ /[0..9]+/ {
       die "Sqdn = '$val' is not an integer in the inclusive range $cslo-$cshi\n";
     }
     if ($val < $cslo || $val > $cshi) {
       die "Sqdn = '$val' is not an integer in the inclusive range $cslo-$cshi\n";
     }
 
-    if ($arg =~ /sqdnP/) {
+    #if ($arg =~ /sqdnP/) {
+    if $arg ~~ /sqdnP/ {
       $sqdnP = $val;
     }
     else {
@@ -390,32 +399,38 @@ for @*ARGS -> $arg {
     }
   }
   #  8
-  elsif ($arg =~ m{\A -ao}xms) {
+  #elsif ($arg =~ m{\A -ao}xms) {
+  elsif $arg ~~ /^ '-ao'/ {
     zero_modes();
     $aog = 1;
   }
   #  9
-  elsif ($arg =~ m{\A -map}xms) {
+  #elsif ($arg =~ m{\A -map}xms) {
+  elsif $arg ~~ /^ '-map'/ {
     zero_modes();
     $map = 1;
   }
   # 10
-  elsif ($arg =~ m{\A -geo}xms) {
+  #elsif ($arg =~ m{\A -geo}xms) {
+  elsif $arg ~~ /^ '-geo'/ {
     zero_modes();
     $geo = 1;
   }
   # 11
-  elsif ($arg =~ m{\A -rew}xms) {
+  #elsif ($arg =~ m{\A -rew}xms) {
+  elsif $arg ~~ /^ '-rew'/ {
     zero_modes();
     $rewrite = 1;
   }
   # 12
-  elsif ($arg =~ m{\A -tw}xms) {
+  #elsif ($arg =~ m{\A -tw}xms) {
+  elsif $arg ~~ /^ '-tw'/ {
     zero_modes();
     $tweet = 1;
   }
   # 13
-  elsif ($arg =~ m{\A -pr}xms) {
+  #elsif ($arg =~ m{\A -pr}xms) {
+  elsif $arg ~~ /^ '-pr'/ {
     zero_modes();
 
     # tmp setting
@@ -427,16 +442,19 @@ for @*ARGS -> $arg {
     $preps = $val;
   }
   # 14
-  elsif ($arg =~ m{\A -gc}xms
-	 || $arg =~ m{\A -du}xms) {
+  #elsif ($arg =~ m{\A -gc}xms
+  #	 || $arg =~ m{\A -du}xms) {
+  elsif $arg ~~ /^ ['-gc'|'-du']/ {
     zero_modes();
     get_toms_google_contacts();
   }
   # 15/24
-  elsif ($arg =~ m{\A -ad}xms) {
+  #elsif ($arg =~ m{\A -ad}xms) {
+  elsif $arg ~~ /^ '-ad'/ {
     # seldom used
     zero_modes();
-    if ($arg =~ /addr/) {
+    #if ($arg =~ /addr/) {
+    if $arg ~~ /addr/ {
       $address = $val;
     }
     else {
@@ -444,21 +462,24 @@ for @*ARGS -> $arg {
     }
   }
   # 16
-  elsif ($arg =~ m{\A -mail}xms) {
+  #elsif ($arg =~ m{\A -mail}xms) {
+  elsif $arg ~~ /^ '-mail'/ {
     # seldom used
     zero_modes();
     $mail     = 1;
     $mail_typ = $val;
   }
   # 17
-  elsif ($arg =~ m{\A -csv}xms) {
+  #elsif ($arg =~ m{\A -csv}xms) {
+  elsif $arg ~~ /^ '-csv'/ {
     die "ERROR: '-csv=X' needs '=cs' or '=admin'"
       if (!defined $val || ($val ne 'cs' && $val ne 'admin'));
     zero_modes();
     write_csv_file({ type => $val});
   }
   # 18
-  elsif ($arg =~ m{\A -me}xms) {
+  #elsif ($arg =~ m{\A -me}xms) {
+  elsif $arg ~~ /^ '-me'/ {
     zero_modes();
     write_memorial_rolls({
 			  delete         => 0,
@@ -467,23 +488,27 @@ for @*ARGS -> $arg {
 			 });
   }
   # 19
-  elsif ($arg =~ m{\A -u65}xms) {
+  #elsif ($arg =~ m{\A -u65}xms) {
+  elsif $arg ~~ /^ '-u65'/ {
     zero_modes();
     $u65 = $val;
     #read_u65_cs_excel_data($val);
   }
   # 20
-  elsif ($arg =~ m{\A -raz}xms) {
+  #elsif ($arg =~ m{\A -raz}xms) {
+  elsif $arg ~~ /^ '-raz'/ {
     zero_modes();
     $raz = 1;
   }
   # 21
-  elsif ($arg =~ m{\A -res}xms) {
+  #elsif ($arg =~ m{\A -res}xms) {
+  elsif $arg ~~ /^ '-res'/ {
     zero_modes();
     $restrict = 1;
   }
   # 22
-  elsif ($arg =~ m{\A -nop}xms) {
+  #elsif ($arg =~ m{\A -nop}xms) {
+  elsif $arg ~~ /^ '-nop'/ {
     zero_modes();
     $nopics = 1;
   }
@@ -493,19 +518,28 @@ for @*ARGS -> $arg {
 
 =pod
 
-  elsif ($arg =~ m{\A -frep}xms) {
+  #elsif ($arg =~ m{\A -frep}xms) {
+  elsif $arg ~~ /^ '-frep'/ {
     die "FATAL: The '-frep' option has been turned off.\n";
 
     my $date = $val;
     die "ERROR:  Date must be in 'YYYYMMDD' format but it's empty.\n"
       if !defined $date;
 
+    =begin comment
     if ($date !~ m{\A 201 [4-5]{1}      # YYYY (year: 2014 | 2015)
                       [0-1]{1} [0-9]{1} # MM (month: 1-12)
                       [0-3]{1} [0-9]{1} # DD (day: 1=31)
                       \z
-		}xms) {
-      die "ERROR:  date must be in 'YYYYMMDD' format but it's '$date'";
+		  }xms) {
+    =end comment
+    if $date !~~ /^ 201 [4|5]..2    # YYYY (year: 2014 | 2015)
+                      [0|1] [0..9]  # MM (month: 1-12)
+                      [0..3] [0..9] # DD (day: 1=31)
+                 /
+		{
+
+        die "ERROR:  date must be in 'YYYYMMDD' format but it's '$date'";
     }
     my $yr = substr $date, 0, 4;
     my $mo = substr $date, 4, 2;
@@ -517,73 +551,95 @@ for @*ARGS -> $arg {
 
 =cut
 
-  elsif ($arg =~ m{\A -rea}xms) {
+  #elsif ($arg =~ m{\A -rea}xms) {
+  elsif $arg ~~ /^ '-rea'/ {
     $G::real_xls = 1;
   }
-  elsif ($arg =~ m{\A -so}xms) {
+  #elsif ($arg =~ m{\A -so}xms) {
+  elsif $arg ~~ /^ '-so'/ {
     # sort keys, exit from there
     sort_show_keys(\%G::cmate);
   }
-  elsif ($arg =~ m{\A -rp}xms) {
+  #elsif ($arg =~ m{\A -rp}xms) {
+  elsif $arg ~~ /^ '-rp'/ {
     # raw picture stats, exit from there
     show_raw_picture_stats(\%G::cmate);
   }
-  elsif ($arg =~ m{\A -tu}xms) {
+  #elsif ($arg =~ m{\A -tu}xms) {
+  elsif $arg ~~ /^ '-tu'/ {
     # list nobct1961s, exit from there
     show_nobct1961s(\%G::cmate);
   }
-  elsif ($arg =~ m{\A -deb}xms) {
+  #elsif ($arg =~ m{\A -deb}xms) {
+  elsif $arg ~~ /^ '-deb'/ {
     $debug = 1;
     $G::warn  = 1;
   }
-  elsif ($arg =~ m{\A -dec}xms) {
+  #elsif ($arg =~ m{\A -dec}xms) {
+  elsif $arg ~~ /^ '-dec'/ {
     $redo_deceased = 1;
   }
-  elsif ($arg =~ m{\A -o}xms) {
+  #elsif ($arg =~ m{\A -o}xms) {
+  elsif $arg ~~ /^ '-o'/ {
     $one = 1;
   }
-  elsif ($arg =~ m{\A -n}xms) {
+  #elsif ($arg =~ m{\A -n}xms) {
+  elsif $arg ~~ /^ '-n'/ {
     $G::warn = 0;
   }
-  elsif ($arg =~ m{\A -warn}xms) {
+  #elsif ($arg =~ m{\A -warn}xms) {
+  elsif $arg ~~ /^ '-warn'/ {
     $G::warn = 1;
   }
-  elsif ($arg =~ m{\A -ps}xms) {
+  #elsif ($arg =~ m{\A -ps}xms) {
+  elsif $arg ~~ /^ '-ps'/ {
     # picture stats
     $G::pstats = 1;
     zero_modes();
     $gen   = 1;
   }
-  elsif ($arg =~ m{\A -fi}xms) {
+  #elsif ($arg =~ m{\A -fi}xms) {
+  elsif $arg ~~ /^ '-fi'/ {
     $draft = 0;
     $G::warn  = 1;
   }
-  elsif ($arg =~ m{\A -f [\w\W]* x }xms) {
+  #elsif ($arg =~ m{\A -f [\w\W]* x }xms) {
+  elsif $arg ~~ /^ '-f' \N* x / {
     $G::force_xls = 1;
   }
-  elsif ($arg =~ m{\A -fo}xms) {
+  #elsif ($arg =~ m{\A -fo}xms) {
+  elsif $arg ~~ /^ '-fo'/ {
     $G::force = 1;
   }
-  elsif ($arg =~ m{\A -r(es)?=(3|6|12)}xms) {
-    $G::ires = $2 * 100;
+  #elsif ($arg =~ m{\A -r(es)?=(3|6|12)}xms) {
+  elsif $arg ~~ /^ '-r' [es]? '=' (3|6|12) / {
+    #$G::ires = $2 * 100;
+    $G::ires = +$0 * 100;
   }
-  elsif ($arg =~ m{\A -t(yp)?=(tif|gif|jpg)}xms) {
-    $typ = $2;
+  #elsif ($arg =~ m{\A -t(yp)?=(tif|gif|jpg)}xms) {
+  elsif $arg ~~ /^ '-t' [y|p]? '=' (tif|gif|jpg) / {
+    $$typ = $2;
+    $typ = ~$0;
   }
-  elsif ($arg =~ m{\A -us}xms) {
+  #elsif ($arg =~ m{\A -us}xms) {
+  elsif $arg ~~ /^ '-us'/ {
     $G::use_cloud = 1;
   }
-  elsif ($arg =~ m{\A -em}xms) {
+  #elsif ($arg =~ m{\A -em}xms) {
+  elsif $arg ~~ /^ '-em'/ {
     $sendmail = 1; # really send the email
   }
-  elsif ($arg =~ m{\A -se}xms) {
+  #elsif ($arg =~ m{\A -se}xms) {
+  elsif $arg ~~ /^ '-se'/ {
     $send     = 1; # really send the tweet
     $sendmail = 0; # really send the email (off until mail is working again)
   }
-  elsif ($arg =~ m{\A -su}xms) {
+  #elsif ($arg =~ m{\A -su}xms) {
+  elsif $arg ~~ /^ '-su'/ {
     $submap = 1;
   }
-  elsif ($arg =~ m{\A -main}xms) {
+  #elsif ($arg =~ m{\A -main}xms) {
+  elsif $arg ~~ /^ '-main'/ {
     $maint = 1;
   }
   else {
