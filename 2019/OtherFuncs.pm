@@ -15,6 +15,116 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
 
+sub check_update_stats_db :Export(:DEFAULT) {
+  my $stats          = shift @_; # hash of stats objects
+  my $CL_has_changed = shift @_;
+
+  my $dbh = USAFA_Stats->new();
+
+  # must initialize the db if never used before so check all tables
+  my $newdb = 1;
+  foreach my $table (keys %{$stats}) {
+    my $rowid = $dbh->get_last_row_id($table);
+    die "rowid is 'undef'" if !defined $rowid;
+    #print "DEBUG: rowid is '$rowid' for table '$table'\n";
+    next if !$rowid;
+
+=pod
+
+    if ($rowid) {
+      #die "debug exit: unexpected non-zero row for table '$table'";
+    }
+
+=cut
+
+    # if we find any filled row, we know the db is NOT new so end the test
+    $newdb = 0;
+    last;
+  }
+  if ($newdb) {
+    print "Stats database is being initialized...\n";
+    # fill it and exit
+    foreach my $table (keys %{$stats}) {
+      my $stat = $stats->{$table};
+      my $rowid = $dbh->insert_row($stat, $table);
+    }
+    return;
+  }
+  # a filled db exists
+
+  # if 'CL.pm' has changed, check to see if the stats db has changed;
+  # if so, update it; othewise return
+  #my $debug = 0;
+  if (!$CL_has_changed) {
+    print "Stats database is assumed also unchanged.\n";
+    return;
+  }
+
+  #print "DEBUG: forcing db update check.\n" if $debug;
+
+  # test for update needed
+  print "Stats database is being checked for changes...\n";
+
+  my $need_update = 0;
+
+ TABLE:
+  foreach my $table (keys %{$stats}) {
+    my $stat = $stats->{$table};
+
+    # fill a hash with current data
+    my %curr_params;
+
+    $curr_params{address}     = $stat->address;
+    $curr_params{aog}         = $stat->aog;
+    $curr_params{csaltrep}    = $stat->csaltrep;
+    $curr_params{csrep}       = $stat->csrep;
+    $curr_params{deceased}    = $stat->deceased;
+    $curr_params{email}       = $stat->email;
+    $curr_params{lost}        = $stat->lost;
+    $curr_params{phone}       = $stat->phone;
+    $curr_params{reunion50}   = $stat->reunion50;
+    $curr_params{show_on_map} = $stat->show_on_map;
+    $curr_params{total}       = $stat->total;
+
+    # fill a hash with last update data
+    my %last_params;
+    my $rowid = $dbh->get_last_row_data(\%last_params, $table);
+
+    # compare the two
+    foreach my $f (keys %curr_params) {
+      my $vold = $last_params{$f};
+      my $vnew = $curr_params{$f};
+      if ($vnew != $vold) {
+	# need an update
+	$need_update = 1;
+	last TABLE;
+      }
+    }
+  }
+
+  if (!$need_update) {
+    print "Stats database has been checked and no update is needed.\n";
+    return;
+  }
+
+  print "Stats database has been checked and an update is needed...\n";
+
+  my $rowid = 0;
+  foreach my $table (keys %{$stats}) {
+    my $stat = $stats->{$table};
+    my $rid = $dbh->insert_row($stat, $table);
+    if ($rowid ) {
+      die "FATAL:  rowid = $rowid but rid = $rid."
+	if ($rowid != $rid);
+    }
+    $rowid = $rid;
+  }
+  print "Stats database update is complete.\n";
+
+  #die "DEBUG FATAL: A changed 'CL.pm' needs an updated stats database.";
+
+} # check_update_stats_db
+
 sub has_CL_changed :Export(:DEFAULT) {
   # test against CL.pm with an md5 hash to see if it has changed
   use Digest::MD5::File qw(file_md5_hex);
