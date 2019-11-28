@@ -4,6 +4,7 @@ use feature 'say';
 use strict;
 use warnings;
 
+use Readonly;
 use Perl6::Export::Attrs;
 use Carp;
 
@@ -12,6 +13,12 @@ use G;
 use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
+
+sub analyze_contacts_db :Export(:DEFAULT) {
+  # my current contacts and group info are in stored hashes
+  my ($cref, $eref, $gref) = GMAIL::get_contact_hashes();
+
+} # analyze_contacts_db
 
 sub get_toms_google_contacts :Export(:DEFAULT) {
 

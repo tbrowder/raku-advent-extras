@@ -846,12 +846,6 @@ if ($G::nonewpics) {
 
 #### subroutines ####
 
-sub analyze_contacts_db {
-  # my current contacts and group info are in stored hashes
-  my ($cref, $eref, $gref) = GMAIL::get_contact_hashes();
-
-} # analyze_contacts_db
-
 sub write_possible_reps_list {
   my $ofilsref = shift @_;
   my $preps    = shift @_;
