@@ -778,21 +778,21 @@ elsif ($map) {
       }
       GEO_MAPS_USAFA::print_map_data({
 				      type      => $G::USAFA1965,
-				      ofilsref  => \@G::ofils,
-				      cmateref  => \%G::cmate,
+				      ofilsref  => @G::ofils,
+				      cmateref  => %G::cmate,
 				      map       => $mr,
 				      mtype     => $mt,
 				      subtype   => $st,
-				      georef    => \%geodata,
+				      georef    => %geodata,
 				      debug     => $debug,
-				      repref    => \%reps,
+				      repref    => %reps,
 				     });
     }
   }
 
 }
 elsif ($preps) {
-  write_possible_reps_list(\@G::ofils, $preps);
+  write_possible_reps_list(@G::ofils, $preps);
 }
 elsif ($cvt) {
   print "Converting pics to eps...\n";
@@ -809,21 +809,21 @@ elsif ($web) {
 }
 elsif ($tweet) {
   print "Sending tweet from latest news...\n";
-  USAFA_Tweet::send_tweet(\@G::ofils, $G::USAFA1965_tweetfile, $send);
+  USAFA_Tweet::send_tweet(@G::ofils, $G::USAFA1965_tweetfile, $send);
 
   # also send site-news e-mail same as tweet
-  USAFA_SiteNews::send_email(\@G::ofils, $G::USAFA1965_tweetfile, $sendmail, $debug);
+  USAFA_SiteNews::send_email(@G::ofils, $G::USAFA1965_tweetfile, $sendmail, $debug);
 }
 elsif ($sendmail) {
   # send site-news e-mail same as tweet
-  USAFA_SiteNews::send_email(\@G::ofils, $G::USAFA1965_tweetfile, $sendmail, $debug);
+  USAFA_SiteNews::send_email(@G::ofils, $G::USAFA1965_tweetfile, $sendmail, $debug);
 }
 elsif ($rewrite) {
   print "Rebuilding CL.pm module...\n";
   # output to a revised CL module
   my $ofil = 't.pm';
   push @G::ofils, $ofil;
-  U65::write_CL_module($ofil, \%CL::mates);
+  U65::write_CL_module($ofil, %CL::mates);
 }
 elsif ($sqdnP) {
   printf "Finding source picture files for CS-%02d...\n", $sqdnP;
@@ -831,24 +831,24 @@ elsif ($sqdnP) {
 }
 elsif ($G::sqdn) {
   printf "Writing an rtf file of contact data for CS-%02d...\n", $G::sqdn;
-  write_rtf_list($G::sqdn, \%CL::mates);
+  write_rtf_list($G::sqdn, %CL::mates);
 }
 elsif ($address) {
   say "Writing an rtf file of contact data for keys in file '$address'...";
-  write_rtf_list(0, \%CL::mates, $address);
+  write_rtf_list(0, %CL::mates, $address);
 }
 elsif ($nopics) {
   say "Finding names, sqdns, for 'no-pics'.";
   find_nopics();
 }
 elsif ($aog) {
-  ManageWebSite::read_aog_data(\%CL::mates);
+  ManageWebSite::read_aog_data(%CL::mates);
   # now re-write CL with new data
   # need file pointer
   # output to a revised CL module
   my $ofil = 't.pm';
   push @G::ofils, $ofil;
-  U65::write_CL_module($ofil, \%CL::mates);
+  U65::write_CL_module($ofil, %CL::mates);
 }
 elsif ($war) {
   warn "The war memorial option was pretty much a one-shot deal--unless data are updated.\n";
