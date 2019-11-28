@@ -13,6 +13,258 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
 
+sub build_templated_pages :Export(:DEFAULT) {
+  # local vars
+  my ($idir, @fils, $level, $nf, $odir);
+
+  my $debug = 0;
+
+  # "level" refers to the depth of nesting on the web site.  Level 0
+  # is the root level where "index.html" is. Level 1 is a
+  # sub-directory of Level 0, and so on.  Negative levels are
+  # sub-directories outside the public directory (e.g.,
+  # "../cgi-bin2"). The level determiness how href references are
+  # used.
+
+  #=====================================================
+  # level 0 files
+  $level = 0;
+  $idir = './html-templates-master';
+  die "No such dir '$idir'" if !-d $idir;
+  $odir = './web-site';
+  die "No such dir '$odir'" if !-d $odir;
+  @fils = glob("$idir/*.html");
+  foreach my $fi (@fils) {
+    my $basename = basename($fi);
+    my $fo = "$odir/$basename";
+    my $typfil = undef;
+    $typfil = 'pop-up'
+      if ($basename =~ /dedication/i);
+    if ($debug) {
+      printf "DEBUG(%s,%u):\n", __FILE__, __LINE__;
+      print  "  \$fi = '$fi'\n";
+      print  "  \$fo = '$fo'\n";
+      next;
+    }
+    open my $fpi, '<', $fi
+      or die "$fi: $!";
+    open my $fpo, '>', $fo
+      or die "$fo: $!";
+
+    my $aref = 0;
+    U65::insert_nav_into_template($fpi, $fpo, $level, $typfil,
+				  $aref,
+				 {
+				  usafa_pledge_form => $G::GREP_pledge_form,
+				 });
+  }
+
+  #=====================================================
+  # level 1 files
+  $level = 1;
+  $idir = './html-templates-master/site-admin';
+  die "No such dir '$idir'" if !-d $idir;
+  $odir = './web-site/site-admin';
+  die "No such dir '$odir'" if !-d $odir;
+  @fils = glob("$idir/*.html");
+  foreach my $fi (@fils) {
+    my $basename = basename($fi);
+    my $fo = "$odir/$basename";
+    my $typfil = undef;
+    #$typfil = 'etiquette'
+    #  if ($basename =~ /etiquette/i);
+    if ($debug) {
+      printf "DEBUG(%s,%u):\n", __FILE__, __LINE__;
+      print  "  \$fi = '$fi'\n";
+      print  "  \$fo = '$fo'\n";
+      next;
+    }
+
+    open my $fpi, '<', $fi
+      or die "$fi: $!";
+    open my $fpo, '>', $fo
+      or die "$fo: $!";
+
+    U65::insert_nav_into_template($fpi, $fpo, $level, $typfil);
+  }
+
+  #=====================================================
+  # more level 1 files
+  $level = 1;
+  $idir = './html-templates-master/login';
+  die "No such dir '$idir'" if !-d $idir;
+  $odir = './web-site/login';
+  die "No such dir '$odir'" if !-d $odir;
+  @fils = glob("$idir/*.html");
+  foreach my $fi (@fils) {
+    my $basename = basename($fi);
+    my $fo = "$odir/$basename";
+    my $typfil = undef;
+    $typfil = 'index'
+      if ($basename =~ /index/i);
+    if ($debug) {
+      printf "DEBUG(%s,%u):\n", __FILE__, __LINE__;
+      print  "  \$fi = '$fi'\n";
+      print  "  \$fo = '$fo'\n";
+      next;
+    }
+
+    open my $fpi, '<', $fi
+      or die "$fi: $!";
+    open my $fpo, '>', $fo
+      or die "$fo: $!";
+
+    U65::insert_nav_into_template($fpi, $fpo, $level, $typfil);
+  }
+
+  #=====================================================
+  # more level 1 files
+  $level = 1;
+  $idir = './html-templates-master/pages';
+  die "No such dir '$idir'" if !-d $idir;
+  $odir = './web-site/pages';
+  die "No such dir '$odir'" if !-d $odir;
+  @fils = glob("$idir/*.html");
+  foreach my $fi (@fils) {
+    my $basename = basename($fi);
+    my $fo = "$odir/$basename";
+    my $typfil = undef;
+    $typfil = 'index'
+      if ($basename =~ /index/i);
+    if ($debug) {
+      printf "DEBUG(%s,%u):\n", __FILE__, __LINE__;
+      print  "  \$fi = '$fi'\n";
+      print  "  \$fo = '$fo'\n";
+      next;
+    }
+
+    open my $fpi, '<', $fi
+      or die "$fi: $!";
+    open my $fpo, '>', $fo
+      or die "$fo: $!";
+
+    U65::insert_nav_into_template($fpi, $fpo, $level, $typfil);
+  }
+
+  #=====================================================
+  #=== PUBLIC CGI (level 1)
+  #=====================================================
+  # more level 1 files
+  $level = 1;
+  $idir = './html-templates-master/cgi-pub-bin-templates';
+  die "No such dir '$idir'" if !-d $idir;
+  $odir = './cgi-pub-bin/templates';
+  die "No such dir '$odir'" if !-d $odir;
+  my @htmfils = glob("$idir/*.html");
+  foreach my $fi (@htmfils) {
+    my $basename = basename($fi);
+    my $fo = "$odir/$basename";
+    my $typfil = $basename;
+    my $filtyp = '';
+    my @fils = ();
+    $nf = @fils;
+    my $ddir = './site-public-downloads';
+    die "No such dir '$ddir'"
+      if !-d $ddir;
+    if ($basename =~ m{\A public\-download}xms) {
+      # get the current download file list
+      $filtyp = 'xls';
+      @fils = glob("$ddir/*.xls");
+    }
+    elsif ($basename =~ m{\A cs\-pics\-download}xms) {
+      # get the current download file list
+      $filtyp = 'pdf';
+      @fils = glob("$ddir/*.pdf");
+    }
+    else {
+      warn "WARNING:  Unhandled basename '$basename'\n";
+    }
+
+  RECHECK:
+
+    $nf = @fils;
+    if (!$nf) {
+      my $tf = 'test.xls';
+      print "WARNING: Dummy data '$tf' being produced for download into dir '$ddir'.\n";
+      copy $tf, $ddir;
+      @fils = glob("$ddir/*.xls");
+      goto RECHECK;
+    }
+
+    die "ERROR: Found $nf $filtyp files but expected > 0"
+      if (!$nf);
+
+    if ($debug) {
+      printf "DEBUG(%s,%u):\n", __FILE__, __LINE__;
+      print  "  \$fi = '$fi'\n";
+      print  "  \$fo = '$fo'\n";
+      next;
+    }
+
+    open my $fpi, '<', $fi
+      or die "$fi: $!";
+    open my $fpo, '>', $fo
+      or die "$fo: $!";
+
+    U65::insert_nav_into_template($fpi, $fpo, $level, $typfil, \@fils);
+
+  }
+
+  #=====================================================
+  #=== PRIVATE CGI (level -1)
+  #=====================================================
+  # level -1 files
+  $level = -1;
+  # web-site/../cgi-bin2/templates
+  $idir = './html-templates-master/cgi-bin2-templates';
+  die "No such dir '$idir'" if !-d $idir;
+  $odir = './cgi-bin2/templates';
+  die "No such dir '$odir'" if !-d $odir;
+  @fils = glob("$idir/*.html");
+  foreach my $fi (@fils) {
+    my $basename = basename($fi);
+    my $fo = "$odir/$basename";
+    my $typfil = undef;
+    my @xlsfils = ();
+    $nf = @xlsfils;
+    if ($basename =~ m{download\-listing}) {
+      $typfil = $basename; # 'download-listing';
+      # get the current download file list
+      my $ddir = './site-private-downloads';
+      die "No such dir '$ddir'" if !-d $ddir;
+      @xlsfils = glob("$ddir/*.xls");
+
+    RECHECK:
+
+      $nf = @xlsfils;
+      if (!$nf) {
+	my $tf = 'test.xls';
+	print "WARNING: Dummy contact data '$tf' being produced for download.\n";
+	copy $tf, $ddir;
+	@xlsfils = glob("$ddir/*.xls");
+	goto RECHECK;
+      }
+
+      die "ERROR: Found $nf xls files but expected > 0"
+	if (!$nf);
+    }
+    if ($debug) {
+      printf "DEBUG(%s,%u):\n", __FILE__, __LINE__;
+      print  "  \$fi = '$fi'\n";
+      print  "  \$fo = '$fo'\n";
+      next;
+    }
+
+    open my $fpi, '<', $fi
+      or die "$fi: $!";
+    open my $fpo, '>', $fo
+      or die "$fo: $!";
+
+    U65::insert_nav_into_template($fpi, $fpo, $level, $typfil, \@xlsfils);
+  }
+
+} # build_templated_pages
+
 sub build_non_html_pages :Export(:DEFAULT) {
   # local vars
   my ($idir, @fils, $level, $nf, $odir);
