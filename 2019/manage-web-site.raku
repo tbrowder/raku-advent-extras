@@ -687,7 +687,7 @@ elsif ($mail) {
 }
 elsif ($geo) {
   print "# Building geo request data...\n";
-  CLASSMATES_FUNCS::print_geo_data($USAFA1965, \@G::ofils,
+  CLASSMATES_FUNCS::print_geo_data($G::USAFA1965, \@G::ofils,
 				   \@G::cmates, \%G::cmate,
 				  );
   print "Move up to dir '../../../../mydomains' with copy of\n";
