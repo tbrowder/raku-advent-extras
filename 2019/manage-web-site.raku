@@ -875,7 +875,7 @@ if ($web && @G::ofils) {
   }
   if (@tfils) {
     my $n = @tfils;
-    my $s = $n > 1 ? 's' : '';
+    my $s = $n > 1 ?? 's' !! '';
     print "See output file$s:\n";
     print "  $_\n" foreach @tfils;
   }
