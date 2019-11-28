@@ -69,7 +69,7 @@ use PicFuncs;     # for picture and montage generation
 # file for storing a hash
 my $decfil = './.deceased_hash_storage';
 # the hash ref
-$G::dechref;
+#$G::dechref;
 
 my %geodata = %GEO_DATA_USAFA::geodata;
 my $tlspm = './cgi-common/TLSDATA.pm';
@@ -845,98 +845,6 @@ if ($G::nonewpics) {
 }
 
 #### subroutines ####
-
-sub print_html_std_head_body_start {
-  my $fp          = shift @_;
-  my $href        = shift @_;
-  $href = 0 if !defined $href;
-
-  my $title = $href && exists $href->{title} ? $href->{title} : undef;
-  $title = '(no title)' if !defined $title;
-
-  my $has_balloons = $href && exists $href->{has_balloons} ?
-                     $href->{has_balloons} : undef;
-  $has_balloons = 1 if !defined $has_balloons;
-
-  my $level = $href && exists $href->{level} ? $href->{level} : 1;
-
-  my $rootdir = U65::get_root_dir($level);
-
-  print $fp <<"HERE";
-  <head>
-    <meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
-    <title>$title</title>
-    <link rel='stylesheet' type='text/css' href='$rootdir/css/std_props.css' />
-    <link rel='stylesheet' type='text/css' href='$rootdir/css/usafa1965-nav-top.css' />
-HERE
-
-  goto END_HEAD if !$has_balloons;
-
-  # for balloon popups
-  print $fp <<"BALLOONS";
-
-    <!-- for popup balloons =============================================== -->
-    <script type="text/javascript" src="$rootdir/js/balloon.config.js"></script>
-    <script type="text/javascript" src="$rootdir/js/balloon.js"></script>
-    <script type="text/javascript" src="$rootdir/js/box.js"></script>
-    <script type="text/javascript" src="$rootdir/js/yahoo-dom-event.js"></script>
-
-    <style>
-      .tt, p {
-        background-color:white;
-        color:black;
-        text-decoration:none;
-        cursor:pointer;
-      }
-      .hidden {
-        display:none;
-      }
-      pre {
-        background-color:gainsboro;
-        padding:10px;
-        margin-left:20px;
-        margin-right:20px;
-        font-family:courier;
-        font-size:90%;
-      }
-      b.y {
-        background-color:yellow
-      }
-    </style>
-
-    <script type="text/javascript">
-      // white balloon with default configuration
-      // (see http://www.wormbase.org/wiki/index.php/Balloon_Tooltips)
-      var balloon    = new Balloon;
-      BalloonConfig(balloon,'GBubble');
-
-      // a plainer popup box
-      var box         = new Box;
-      BalloonConfig(box,'GBox');
-      box.images = '$rootdir/images/GPlain';
-
-    </script>
-    <!-- end for popup balloons =============================================== -->
-BALLOONS
-
-END_HEAD:
-
-  if (defined $href->{style}) {
-    print $fp "<style>\n";
-    print $fp $href->{style}, "\n";
-    print $fp "</style>\n";
-  }
-
-  # end the head, start body section
-  print $fp <<"BODY";
-  </head>
-  <body>
-BODY
-
-  # finally, the nav div
-  U65::print_top_nav_div($fp, { level => $level, id => 'my-nav-top', });
-
-} # print_html_std_head_body_start
 
 sub print_cs_masthead {
   my $fp   = shift @_;
