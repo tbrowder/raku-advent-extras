@@ -910,7 +910,9 @@ sub build_templated_cgi_files {
 
   # first get the current download file list
   my $idir = './site-downloads';
-  my @xlsfils = glob("$idir/*.xls");
+
+  #my @xlsfils = glob("$idir/*.xls");
+  my @xlsfils = dir $idir, :test("*.xls");
 
 
 } # build_templated_cgi_files
