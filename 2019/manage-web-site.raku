@@ -558,17 +558,20 @@ for @*ARGS -> $arg {
   #elsif ($arg =~ m{\A -so}xms) {
   elsif $arg ~~ /^ '-so'/ {
     # sort keys, exit from there
-    sort_show_keys(\%G::cmate);
+    #sort_show_keys(\%G::cmate);
+    sort_show_keys(%G::cmate);
   }
   #elsif ($arg =~ m{\A -rp}xms) {
   elsif $arg ~~ /^ '-rp'/ {
     # raw picture stats, exit from there
-    show_raw_picture_stats(\%G::cmate);
+    #show_raw_picture_stats(\%G::cmate);
+    show_raw_picture_stats(%G::cmate);
   }
   #elsif ($arg =~ m{\A -tu}xms) {
   elsif $arg ~~ /^ '-tu'/ {
     # list nobct1961s, exit from there
-    show_nobct1961s(\%G::cmate);
+    #show_nobct1961s(\%G::cmate);
+    show_nobct1961s(%G::cmate);
   }
   #elsif ($arg =~ m{\A -deb}xms) {
   elsif $arg ~~ /^ '-deb'/ {
@@ -670,7 +673,8 @@ if (0 && $debug) {
 
 if ($gen) {
   #gen_montage();
-  build_montage(\%CL::mates, $genS);
+  #build_montage(\%CL::mates, $genS);
+  build_montage(%CL::mates, $genS);
   print "Processed $ncmates pictures.\n";
 }
 elsif ($u65) {
@@ -683,12 +687,15 @@ elsif ($restrict) {
   show_restricted_data_info();
 }
 elsif ($mail) {
-  write_mailman_list(\%G::cmate, $mail_typ, \@G::ofils);
+  #write_mailman_list(\%G::cmate, $mail_typ, \@G::ofils);
+  write_mailman_list(%G::cmate, $mail_typ, @G::ofils);
 }
 elsif ($geo) {
   print "# Building geo request data...\n";
-  CLASSMATES_FUNCS::print_geo_data($G::USAFA1965, \@G::ofils,
-				   \@G::cmates, \%G::cmate,
+  #CLASSMATES_FUNCS::print_geo_data($G::USAFA1965, \@G::ofils,
+  #				   \@G::cmates, \%G::cmate,
+  CLASSMATES_FUNCS::print_geo_data($G::USAFA1965, @G::ofils,
+				   @G::cmates, %G::cmate,
 				  );
   print "Move up to dir '../../../../mydomains' with copy of\n";
   print "  the output file to continue.\n";
@@ -700,7 +707,8 @@ elsif ($map) {
   # subtypes (e.g., state => one for each state and country, CS => one
   # for each CS).
   my %map = (); # mapref, keyed by map types (and subkeys)
-  GEO_MAPS_USAFA::get_geocode_submap_keys(\%G::cmate, \%geodata, \%map);
+  #GEO_MAPS_USAFA::get_geocode_submap_keys(\%G::cmate, \%geodata, \%map);
+  GEO_MAPS_USAFA::get_geocode_submap_keys(%G::cmate, %geodata, %map);
 
   my @use
     = <
@@ -732,7 +740,8 @@ elsif ($map) {
   delete %use{debug} if !$debug;
 
   my %reps;
-  U65::get_all_reps(\%reps);
+  #U65::get_all_reps(\%reps);
+  U65::get_all_reps(%reps);
 
   my @mt = (keys %map);
 
@@ -747,13 +756,15 @@ elsif ($map) {
     my $mtyp = $mt;
     $mtyp = 'all_show' if ($mt eq 'debug');
 
-    my $mapref = \%{$map{$mtyp}};
+    #my $mapref = \%{$map{$mtyp}};
+    my $mapref = %{$map{$mtyp}};
     my @mr = ($mapref);
 
     # some types have subtypes
     my @st;
     if !(%styp{$mt}:exists) {
-      @mr = GEO_MAPS_USAFA::get_submap_refs($mapref, $mt, \@st);
+      #@mr = GEO_MAPS_USAFA::get_submap_refs($mapref, $mt, \@st);
+      @mr = GEO_MAPS_USAFA::get_submap_refs($mapref, $mt, @st);
     }
 
     my $n = @mr;
