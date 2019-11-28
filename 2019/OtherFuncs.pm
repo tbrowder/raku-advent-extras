@@ -1,4 +1,4 @@
-package PicFuncs;
+package OtherFuncs;
 
 use feature 'say';
 use strict;
