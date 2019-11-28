@@ -876,8 +876,9 @@ if ($web && @G::ofils) {
   if (@tfils) {
     my $n = @tfils;
     my $s = $n > 1 ?? 's' !! '';
-    print "See output file$s:\n";
-    print "  $_\n" foreach @tfils;
+    say "See output file$s:";
+    #print "  $_\n" foreach @tfils;
+    .say for @tfils;
   }
 }
 elsif (!$web && @G::ofils) {
