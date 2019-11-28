@@ -14,6 +14,186 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
 
+sub write_excel_files :Export(:DEFAULT) {
+  my $href = shift @_;
+  die "bad arg \$href"
+    if (!defined $href || ref($href) ne 'HASH');
+
+  my $typ            = $href->{type}       || 'unknown';
+  my $delete         = $href->{delete}     || 0;
+  my $real_xls       = $href->{real_xls}   || 0;
+  $G::force          = $href->{force}      || 0;
+  my $stats_href     = $href->{stats_href};
+  my $CL_has_changed = $href->{CL_has_changed};
+
+  die "FATAL: CL_has_changed has NOT been defined"
+    if !defined $CL_has_changed;
+
+  # need curr date for file names
+  my $date = get_iso_date(); # 'yyyy-mm-dd'
+
+  if ($typ eq 'admin') {
+    my $odir = './site-public-downloads';
+
+    my $f  = "${odir}/admin-reps-status.xls";
+    # okay to overwrite
+    open my $fp, '>', $f
+      or die "$f: $!";
+
+    my @fields = qw(CS
+		    NAME
+		    E-MAIL
+		    CERTS
+		    SHOW-ON-MAP
+		    SHOW-PHONE
+		    OS);
+
+    my $xls_sink = Spreadsheet::DataToExcel->new;
+
+    # create a 2D array of the data
+    my @data = ();
+
+    # always have a header row
+    push @data, [@fields];
+
+    foreach my $cs (1..24) {
+      my $p  = $U65::rep_for_sqdn{$cs}{prim};
+      my $a1 = $U65::rep_for_sqdn{$cs}{alt1};
+      my $a2 = $U65::rep_for_sqdn{$cs}{alt2};
+      my $a3 = $U65::rep_for_sqdn{$cs}{alt3};
+      foreach my $k ($p, $a1, $a2, $a3) {
+	next if !$k;
+	my $name  = get_name_group(\%CL::mates, $k, {type => $USAFA1965});
+	my $email = $CL::mates{$k}{email};
+	my $cert  = $CSReps::rep{$k}{certs};
+        my $map   = $CL::mates{$k}{show_on_map}  ? 'yes' : 'no';
+        my $phone = $CSReps::rep{$k}{phone} ? 'yes' : 'no';
+        my $os    = $CSReps::rep{$k}{os} ? $CSReps::rep{$k}{os} : '';
+	my $CS = sprintf "CS-%02d", $cs;
+
+	my @cols = ($CS, $name, $email, $cert, $map, $phone, $os);
+
+        push @data, [@cols];
+      }
+    }
+
+
+    $xls_sink->dump($fp, \@data, {
+				  text_wrap => 0,
+				  center_first_row => 1,
+				 })
+      or die "Error: " . $xls_sink->error;
+    push @G::ofils, $f;
+
+  } # type 'admin'
+  elsif ($typ eq 'cs') {
+
+    # don't continue if 'CL.pm' has not changed (unless $G::force is
+    # defined)
+    if (!$CL_has_changed) {
+      return if !$G::force;
+    }
+
+    print "Generating CS xls files...\n";
+
+    my $odir = './site-private-downloads';
+
+    # csv header (field names)
+    my @csfields = U65Fields::get_fields('csfields');
+    die "empty fields!!" if !@csfields;
+
+    my @fields = ('key', @csfields);
+
+    # delete old files if desired
+    if ($real_xls || $delete) {
+      my @fils = glob("$odir/*.xls");
+      unlink @fils;
+    }
+
+    my $xls_sink = Spreadsheet::DataToExcel->new;
+
+    foreach my $cs(1..24) {
+
+      my $f = sprintf "${odir}/cs-%02d-classmate-data-${date}.xls", $cs;
+      if (!$real_xls) {
+	$f = sprintf "${odir}/cs-%02d-classmate-dummy-data.xls", $cs;
+      }
+      # okay to overwrite
+      open my $fp, '>', $f
+	or die "$f: $!";
+
+      # create a 2D array of the data
+      my @data = ();
+
+      # always have a header row (needs to be a function tied into the U65 fields)
+      # note that 'key' has been added as the first field
+      push @data, [@fields];
+
+      if (!$real_xls) {
+	# make a single, small test file
+	my $tfil = 'test.xls';
+#copy $tfil, $odir;
+	push @G::ofils, "$odir/$tfil";
+
+	# create a single LARGE test file
+        my %cm;
+	U65::get_dummy_classmate(\%cm);
+	my $co = U65Classmate->new(\%cm);
+	print Dumper(\%cm); die "debug exit";
+
+	my @colvals = $co->get_field_values('dummy');
+
+	my $numlines = 10000;
+
+        for (my $i = 0; $i < $numlines; ++$i) {
+	  push @data, [@colvals];
+        }
+
+	$xls_sink->dump($fp, \@data, {
+				      text_wrap => 0,
+				      center_first_row => 1,
+				     })
+	  or die "Error: " . $xls_sink->error;
+	push @G::ofils, $f;
+
+	return;
+      }
+
+      # step through entire list of classmates and write a line for
+      # each one in the 'preferred_squadron'
+      foreach my $c (@G::cmates) {
+	next if (!U65::is_in_sqdn($cs, $CL::mates{$c}{sqdn}));
+	# one line of data
+	my $href    = \%{$CL::mates{$c}};
+	my $co      = U65Classmate->new($href);
+	my @colvals = $co->get_field_values($c);
+
+        push @data, [@colvals];
+
+	#$csv->print($fp, \@colvals);
+      }
+
+=pod
+
+      if ($cs == 10) {
+	print Dumper(@data); die "debug exit";
+      }
+
+=cut
+
+      $xls_sink->dump($fp, \@data, {
+				    text_wrap => 0,
+				    center_first_row => 1,
+				   })
+        or die "Error: " . $xls_sink->error;
+      push @G::ofils, $f;
+    }
+  } # type 'cs'
+  else {
+    die "Unknown type xls file: '$typ'";
+  }
+} # write_excel_files
+
 sub get_stat_font_color_class :Export(:DEFAULT) {
   use integer;
   my $num = shift @_;

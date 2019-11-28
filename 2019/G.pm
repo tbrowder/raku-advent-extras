@@ -41,6 +41,6 @@ our $GREP_pledge_form;
 our $dechref;
 our $use_cloud      = 0;
 our $nonewpics      = 0;
-
+our @cmates;
 # all modules must return a true value
 1;
