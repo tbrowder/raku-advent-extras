@@ -14,6 +14,96 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
 
+sub print_cs_reps_table_data :Export(:DEFAULT) {
+  my $fp    = shift @_;
+  my $nalts = shift @_;
+
+  my $snum    = shift @_;
+
+  my $mail    = shift @_;
+  my $mailto  = shift @_;
+  my $name    = shift @_;
+  my $phones  = shift @_;
+  my $pic     = shift @_;
+  my $L       = shift @_;
+  my $R       = shift @_;
+
+  my $mail1   = shift @_;
+  my $mailto1 = shift @_;
+  my $name1   = shift @_;
+  my $phones1 = shift @_;
+  my $pic1    = shift @_;
+  my $L1      = shift @_;
+  my $R1      = shift @_;
+
+  my $mail2   = shift @_;
+  my $mailto2 = shift @_;
+  my $name2   = shift @_;
+  my $phones2 = shift @_;
+  my $pic2    = shift @_;
+  my $L2      = shift @_;
+  my $R2      = shift @_;
+
+  my $mail3   = shift @_;
+  my $mailto3 = shift @_;
+  my $name3   = shift @_;
+  my $phones3 = shift @_;
+  my $pic3    = shift @_;
+  my $L3      = shift @_;
+  my $R3      = shift @_;
+
+  my $last_row = shift @_;
+  my $BD = defined $last_row ? 'BD' : '';
+
+  {
+    print $fp <<"HERE";
+      <tr>
+        <td class='C LD $BD'>$snum</td>
+
+        <td class='C $BD'>
+            <h4>$name</h4>
+            $phones
+            <h6>$L<a href='$mailto'>$mail</a>$R</h6>
+        </td>
+        <td class='C RD $BD'>$pic</td>
+HERE
+  }
+
+  if ($nalts > 0) {
+    print $fp <<"HERE";
+        <td class='C $BD'>
+            <h4>$name1</h4>
+            $phones1
+            <h6>$L1<a href='$mailto1'>$mail1</a>$R1</h6>
+        </td>
+        <td class='C RD $BD'>$pic1</td>
+HERE
+  }
+  if ($nalts > 1) {
+    print $fp <<"HERE";
+        <td class='C $BD'>
+            <h4>$name2</h4>
+            $phones2
+            <h6>$L2<a href='$mailto2'>$mail2</a>$R2</h6>
+        </td>
+        <td class='C RD $BD'>$pic2</td>
+HERE
+  }
+  if ($nalts > 2) {
+    print $fp <<"HERE";
+        <td class='C $BD'>
+            <h4>$name3</h4>
+            $phones3
+            <h6>$L3<a href='$mailto3'>$mail3</a>$R3</h6>
+        </td>
+        <td class='C RD $BD'>$pic3</td>
+HERE
+  }
+
+  print $fp "      </tr>\n";
+
+} # print_cs_reps_table_data
+
 sub print_cs_reps_table_header :Export(:DEFAULT) {
   my $fp    = shift @_;
   my $nalts = shift @_;
