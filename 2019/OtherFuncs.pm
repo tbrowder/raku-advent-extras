@@ -11,6 +11,353 @@ use lib ('.', './lib');
 use G;
 use CLASSMATES_FUNCS qw(:all);
 
+#sub Build_web_pages :Export(:DEFAULT) {
+
+sub print_picture_set_as_table :Export(:DEFAULT) {
+  # will print any collection of pictures as a table
+
+  my $fp           = shift @_;
+  my $name_aref    = shift @_;
+  my $pics_per_row = shift @_;
+  my $cwidth       = shift @_;
+  my $href         = shift @_;
+
+  $pics_per_row = 5
+    if !defined $pics_per_row;
+
+  $href = 0
+    if !defined $href;
+
+  # the sqdn hash is filled on the ALL big table printing
+  my $sqdn_href  = $href && exists $href->{sqdn} ? $href->{sqdn} : 0;
+
+  # we may need a type to know what to do
+  my $typ = $href && exists $href->{type} ? $href->{type} : 0; # default 0
+  # we may need the level
+  my $level = $href && exists $href->{level} ? $href->{level} : 1; # default 1
+
+
+  my $deceased_page = ($typ && ($typ =~ /deceased/ || $typ =~ /war/)) ? 1 : 0;
+  my $pow_page      = ($typ && ($typ =~ /pow/)) ? 1 : 0;
+  my $cslogo_page   = ($typ && ($typ =~ /cs\-logo/)) ? 1 : 0;
+
+  my @n = @{$name_aref};
+  my $nnames = @n;
+
+  my $colwidth = 100 / $pics_per_row;
+
+  my $nrow_sets;
+  {
+    use integer;
+    $nrow_sets = ($nnames / $pics_per_row);
+    ++$nrow_sets
+      if ($nnames % $pics_per_row);
+  }
+
+  if (0 && ($deceased_page || $pow_page)) {
+    print "DEBUG: typ = '$typ', nrow_sets = $nrow_sets\n";
+  }
+
+  # changed to 4 rows in 2019-11-10
+  # suggested by Tom Plank
+  # normally there are 4 rows per set (one person)
+  #   picture
+  #   name
+  #   page in 1962 Polaris
+  #   deceased info
+
+  my $rows_per_set = 4;
+
+  # extra row for the POWs: dates of incarceration
+
+  ++$rows_per_set
+    if ($pow_page);
+  my $nrows = $nrow_sets * $rows_per_set;
+
+  if (0 && $pow_page) {
+    print "DEBUG: typ = '$typ', nrows = $nrows\n";
+  }
+  print $fp "    <br />\n";
+
+  print $fp "    <table width='100%' class='pics'>\n";
+  print $fp "      <colgroup valign='top' align='center' width='${colwidth}%' span='$pics_per_row' >\n";
+
+  print $fp "      </colgroup>\n";
+
+  # keep names for memory divs
+  my @memnames = ();
+
+  my $ni = 0; # name index
+
+ ROW_SET:
+
+  for (my $i = 0; $i < $nrow_sets; ++$i) {
+
+    # this is $nrows_per_set row3 of $pics_per_row or less
+    my $nremain = $nnames - $ni;
+    $nremain = $nremain > $pics_per_row ? $pics_per_row : $nremain;
+
+    # get names for these sets
+    my @ns = ();
+    for (my $j = 0; $j < $nremain; ++$ni, ++$j) {
+      push @ns, $n[$ni];
+    }
+
+    # first row is picture =====================================================
+    print $fp "      <tr>\n";
+    for (my $j = 0; $j < $nremain; ++$j) {
+      # a table cell
+      my $n = $ns[$j];
+
+      # vars
+      my ($tifpic, $deceased, $jpgpic, $pic, $picloc);
+
+      # the picture
+      if ($cslogo_page) {
+	# the image should be centered
+	$pic = sprintf "cs-%d-150h", $n;
+	if ($level == 1) {
+	  $picloc = "../images/${pic}.png";
+	}
+	elsif ($level == 0) {
+	  $picloc = "./images/${pic}.png";
+	}
+	else {
+	  die "FATAL: Don't know how to handle level == '$level'";
+	}
+
+	# note we remove any '../' for the next call:
+	$picloc = CLOUD_USAFA::get_cloud_name('images', "${pic}.png")
+	  if $G::use_cloud;
+      }
+      else {
+	# the original tif
+	$tifpic   = $CL::mates{$n}{file};
+	die "no tif pic for classmate '$n'"
+	  if !defined $tifpic;
+	die "no tif pic ($tifpic) exists for classmate '$n'"
+	  if !-f $tifpic;
+
+        # current status
+	$deceased = $CL::mates{$n}{deceased};
+        my $is_deceased = $deceased ? 1 : 0;
+
+        # last run status
+        my $last_deceased = exists $G::dechref->{$n} ? $G::dechref->{$n} : 0;
+
+        # redo or not?
+        my $update_deceased = ($last_deceased == $is_deceased) ? 0 : 1;
+
+	# the output jpg
+	$jpgpic = "web-site/images/${n}.jpg";
+	# produce the output pic if need be
+	if (!$G::nonewpics && ($G::force || !-f $jpgpic || $update_deceased)) {
+	  produce_web_jpg_from_tif($tifpic, $jpgpic, $deceased);
+	}
+
+        # update the last run status
+        $G::dechref->{$n} = $is_deceased;
+        # and save it
+        put_CL_deceased($G::dechref);
+
+	# produce the image reference
+	# the image should be centered
+	$pic = ($G::nonewpics && !-f $jpgpic) ? 'no-picture' : $n;
+	if ($level == 1) {
+	  $picloc = "../images/${pic}.jpg";
+	}
+	elsif ($level == 0) {
+	  $picloc = "./images/${pic}.jpg";
+	}
+	else {
+	  die "FATAL: Don't know how to handle level == '$level'";
+	}
+
+	# note we remove the '../' for the next call:
+	$picloc = CLOUD_USAFA::get_cloud_name('images', "${pic}.jpg")
+	  if $G::use_cloud;
+      }
+
+      die "What?" if !defined $picloc;
+
+      print $fp "            <td><img src='$picloc' alt='x' class='center' /></td>\n";
+    }
+    print $fp "      </tr>\n";
+
+    # second row is name =======================================================
+    print $fp "      <tr>\n";
+    for (my $j = 0; $j < $nremain; ++$j) {
+      # a table cell
+      my $n = $ns[$j];
+
+      if ($cslogo_page) {
+	push @memnames, $n;
+	my $name   = sprintf "CS-%02d", $n;
+	my $msg = "Click on name for history...";
+	print $fp "            <!-- load text from hidden div element -->\n";
+	print $fp "            <td>";
+
+	print $fp "<span";
+	print $fp " onmouseover=\"balloon.showTooltip(event, '$msg')\"";
+	print $fp " onclick=\"balloon.showTooltip(event,'load:$n',1)\"";
+	print $fp ">";
+	print $fp "<span class='memory'>$name</span>";
+	print $fp "</span>";
+	print $fp "</td>\n";
+	next;
+      }
+
+      my $name = assemble_name(\%CL::mates, $n);
+
+      # memory? (not all memory names are war heroes, e.g., Pete Dalton)
+      my $memfil = $CL::mates{$n}{memory_file};
+      if (!$memfil) {
+	print $fp "            <td>$name</td>\n";
+      }
+      else {
+	push @memnames, $n;
+        my $spantyp = exists $U65::hero{$n} ? 'warmemory' : 'memory';
+	my $msg = $spantyp =~ /war/ ? 'Click on name for details...'
+	                            : 'Click on name for memories...';
+
+	print $fp "            <!-- load text from hidden div element -->\n";
+	print $fp "            <td>";
+
+	print $fp "<span";
+	print $fp " onmouseover=\"balloon.showTooltip(event, '$msg')\"";
+	print $fp " onclick=\"balloon.showTooltip(event,'load:$n',1)\"";
+	print $fp ">";
+	print $fp "<span class='$spantyp'>$name</span>";
+	print $fp "</span>";
+	print $fp "</td>\n";
+      }
+    }
+    print $fp "      </tr>\n";
+    # last row for logo pages
+    next ROW_SET if $cslogo_page;
+
+    # third row is other data ==================================================
+    print $fp "      <tr>\n";
+    for (my $j = 0; $j < $nremain; ++$j) {
+      # a table cell
+      my $n = $ns[$j];
+      my $sqdn = $CL::mates{$n}{sqdn};
+
+      my @sqdn = ($sqdn);
+      # decode and fill the squadron reference here
+      if ($sqdn_href && $sqdn) {
+	if ($sqdn =~ m{,}) {
+	  @sqdn = split(',', $sqdn);
+	}
+	foreach my $s (@sqdn) {
+	  $sqdn_href->{$s}{$n} = 1;
+	}
+      }
+
+      # and other data
+      my $page     = $CL::mates{$n}{page};
+      my $pagepart = $CL::mates{$n}{pagepart};
+
+      # if pic is from another source say so
+      my $picsource = $CL::mates{$n}{picsource};
+
+      my $data = $page ? "p. $page $pagepart" : $picsource;
+      if ($typ =~ /memory-of/ || $typ =~ /honor-of/) {
+	$data = '';
+      }
+
+      # don't print sqdn data unless we're not in the sqdn page
+      if ($sqdn_href || $typ ne 'sqdn') {
+	$sqdn = shift @sqdn;
+	if ($sqdn) {
+	  $data .= ", " if $data;
+	  $data .= "CS-${sqdn}";
+	  foreach my $s (@sqdn) {
+	    $data .= ", " if $data;
+	    $data .= "CS-${s}";
+	  }
+	}
+	# special for fund page
+	if ($typ =~ /memory-of/ || $typ =~ /honor-of/) {
+	  my $sq = $CL::mates{$n}{preferred_sqdn};
+	  die "FATAL:  Undefined 'preferred_sqdn' for name key '$n'"
+	    if !defined $sq;
+	  $data = "CS-${sq}";
+	}
+      }
+      print $fp "            <td>$data</td>\n";
+    }
+    print $fp "      </tr>\n";
+
+    # ==================================================
+    # fourth row is deceased date, if applicable
+    #if ($deceased_page || $typ =~ /memory-of/) {
+    #print STDERR "TOM FIX DECEASED INFO
+    {
+      print $fp "      <tr>\n";
+      for (my $j = 0; $j < $nremain; ++$j) {
+	# a table cell
+	my $n = $ns[$j];
+	my $deceased = $CL::mates{$n}{deceased};
+        if (!$deceased) {
+          print $fp "            <td></td>\n";
+        }
+	elsif ($deceased =~ /-/) {
+	  $deceased = iso_to_date($deceased);
+          print $fp "            <td>d. $deceased</td>\n";
+	}
+	elsif ($deceased) {
+	  $deceased = 'unknown';
+          print $fp "            <td>d. $deceased</td>\n";
+	}
+      }
+      print $fp "      </tr>\n";
+    }
+
+    #===========================================
+    # fifth row for POWs, dates of incarceration
+    if ($pow_page) {
+      print $fp "      <tr>\n";
+      for (my $j = 0; $j < $nremain; ++$j) {
+	# a table cell
+	my $n = $ns[$j];
+	my $powdates  = $U65::pow{$n}{dates};
+	my $storylink = $U65::pow{$n}{link};
+	# extra row for the POWs page
+	print $fp "            <td><a href=\"$storylink\">$powdates</a></td>\n";
+      }
+      print $fp "      </tr>\n";
+    }
+  }
+  print $fp "    </table>\n";
+
+  # divs from memory text if any
+  if (@memnames) {
+    print $fp "    <!-- hidden divs for memory snippets -->\n";
+    foreach my $n (@memnames) {
+      my $memfil;
+      if ($cslogo_page) {
+	$memfil = sprintf "cs-%02d-logo-history", $n;
+      }
+      else {
+	$memfil = $CL::mates{$n}{memory_file};
+      }
+
+      my $ifil = "./memories/${memfil}.txt";
+      open my $fp2, '<', $ifil
+	or die "$ifil: $!";
+      print $fp "    <div id='$n' style='display:none'>\n";
+      while (defined(my $line = <$fp2>)) {
+	chomp $line;
+	$line =~ s{\A s*}{}xms;
+	print $fp "      $line\n";
+      }
+      print $fp "    </div>\n";
+    }
+  }
+
+} # print_picture_set_as_table
+
 sub Build_web_pages :Export(:DEFAULT) {
   my $maint = shift @_;
   # dir structure:

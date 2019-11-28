@@ -38,8 +38,9 @@ our $CL_WAS_CHECKED = 0;
 our $real_xls       = 0;
 our $force_xls      = 0;
 our $GREP_pledge_form;
-
 our $dechref;
+our $use_cloud      = 0;
+our $nonewpics      = 0;
 
 # all modules must return a true value
 1;
