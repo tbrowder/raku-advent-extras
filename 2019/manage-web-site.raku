@@ -143,9 +143,9 @@ $G::template1b = 'usafa-template1-legal.ps';   # US Legal
 #=========================================
 
 # menu ===================================
-if (!@ARGV) {
-  print<<"HERE";
-Usage: $0 -gen | -cvt [-final][-useborder][-usepics][-debug][-res=X]
+if !@*ARGS {
+    say qq:to /HERE/;
+Usage: $*PROGRAM -gen | -cvt [-final][-useborder][-usepics][-debug][-res=X]
                       [-force][-typ=X][-person][-stats][-warn]
 
 Options:
