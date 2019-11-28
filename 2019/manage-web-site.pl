@@ -72,7 +72,7 @@ my $decfil = './.deceased_hash_storage';
 #$G::dechref;
 
 my %geodata = %GEO_DATA_USAFA::geodata;
-my $tlspm = './cgi-common/TLSDATA.pm';
+$G::tlspm = './cgi-common/TLSDATA.pm';
 
 # for Tweets
 use USAFA_Tweet;
@@ -862,51 +862,3 @@ sub build_templated_cgi_files {
 } # build_templated_cgi_files
 
 =cut
-
-sub gen_tlspm {
-  unlink $tlspm if (-f $tlspm);
-
-  # write the headers
-  open my $fp, '>', $tlspm
-    or die "$tlspm: $!";
-
-  say $fp "package TLSDATA;";
-  say $fp "our %cert_email";
-  say $fp "  = (";
-
-  foreach my $k (@G::cmates) {
-    my $deceased = $G::cmate{$k}{deceased};
-    next if $deceased;
-
-    my $cert_email = $G::cmate{$k}{cert_email};
-    next if !$cert_email;
-
-    my $namekey = $k;
-    my $name    = U65::get_full_name(\%G::cmate, $k);
-    my $is_rep  = exists $CSReps::rep{$k} ? 1 : 0;
-    my $sqdn    = U65::get_last_sqdn($G::cmate{$k}{sqdn});
-    my $email   = $G::cmate{$k}{email};
-
-    # special
-    $is_rep = 1 if ($namekey eq 'browder-tm');
-
-    # fill the hash by cert e-mail
-    say $fp "     '$cert_email'";
-    say $fp "     => {";
-    say $fp "         namekey => '$k',";
-    say $fp "         name    => \"$name\",";
-    say $fp "         is_rep  => $is_rep,";
-    say $fp "         sqdn    => '$sqdn',";
-    say $fp "         email   => '$email',";
-    say $fp "        },";
-
-  }
-
-  # close the hash
-  say $fp "    );\n";
-  say $fp "##### obligatory 1 return for a package #####";
-  say $fp "1;";
-  close $fp;
-
-
-} # gen_tlspm

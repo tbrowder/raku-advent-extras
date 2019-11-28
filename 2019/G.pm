@@ -49,6 +49,7 @@ our $GREP_noteO;
 our $GREP_noteI;
 our $GREP_noteK;
 our $sqdn;
+our $tlspm;
 
 # all modules must return a true value
 1;
