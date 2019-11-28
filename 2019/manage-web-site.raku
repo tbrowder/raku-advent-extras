@@ -771,13 +771,13 @@ elsif ($map) {
     #for (my $i = 0; $i < $n; ++$i) {
     my $i; # loop variable
     loop ($i = 0; $i < $n; ++$i) {
-      my $mr = $mr[$i];
-      my $st = $st[$i];
+      my $mr = @mr[$i];
+      my $st = st[$i];
       if ($debug) {
 	print "DEBUG:  \$mr = '$mr'; \$st = '$st'\n";
       }
       GEO_MAPS_USAFA::print_map_data({
-				      type      => $USAFA1965,
+				      type      => $G::USAFA1965,
 				      ofilsref  => \@G::ofils,
 				      cmateref  => \%G::cmate,
 				      map       => $mr,
@@ -809,14 +809,14 @@ elsif ($web) {
 }
 elsif ($tweet) {
   print "Sending tweet from latest news...\n";
-  USAFA_Tweet::send_tweet(\@G::ofils, $USAFA1965_tweetfile, $send);
+  USAFA_Tweet::send_tweet(\@G::ofils, $G::USAFA1965_tweetfile, $send);
 
   # also send site-news e-mail same as tweet
-  USAFA_SiteNews::send_email(\@G::ofils, $USAFA1965_tweetfile, $sendmail, $debug);
+  USAFA_SiteNews::send_email(\@G::ofils, $G::USAFA1965_tweetfile, $sendmail, $debug);
 }
 elsif ($sendmail) {
   # send site-news e-mail same as tweet
-  USAFA_SiteNews::send_email(\@G::ofils, $USAFA1965_tweetfile, $sendmail, $debug);
+  USAFA_SiteNews::send_email(\@G::ofils, $G::USAFA1965_tweetfile, $sendmail, $debug);
 }
 elsif ($rewrite) {
   print "Rebuilding CL.pm module...\n";
