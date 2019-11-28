@@ -15,6 +15,36 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT)
 
+sub show_restricted_data_info :Export(:DEFAULT) {
+  say "Restricted data info by CS and name:";
+
+  my %sq = ();
+
+  foreach my $c (@G::cmates) {
+    my $sd    = $G::cmate{$c}{hide_data};
+    next if (!$sd);
+    my $sqdns = $G::cmate{$c}{sqdn};
+    my @sqdns = U65::get_sqdns($sqdns);
+    foreach my $s (@sqdns) {
+      $sq{$s}{$c} = $sd;
+    }
+  }
+
+  my $num = 0;
+  foreach my $s (1..24) {
+    next if !exists $sq{$s};
+    printf "CS-%02s:\n", $s;
+    my @nk = (sort keys %{$sq{$s}});
+    foreach my $n (@nk) {
+      ++$num;
+      my $sd = $sq{$s}{$n};
+      printf "       %2d.  %-20.20s $sd\n", $num, $n;
+    }
+  }
+
+  exit;
+} # show_restricted_data_info
+
 sub write_endowment_part_report :Export(:DEFAULT) {
   my $aref = shift @_;
   my $phref      = $aref->{phref};

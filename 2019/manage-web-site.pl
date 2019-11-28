@@ -863,36 +863,6 @@ sub build_templated_cgi_files {
 
 =cut
 
-sub show_restricted_data_info {
-  say "Restricted data info by CS and name:";
-
-  my %sq = ();
-
-  foreach my $c (@G::cmates) {
-    my $sd    = $G::cmate{$c}{hide_data};
-    next if (!$sd);
-    my $sqdns = $G::cmate{$c}{sqdn};
-    my @sqdns = U65::get_sqdns($sqdns);
-    foreach my $s (@sqdns) {
-      $sq{$s}{$c} = $sd;
-    }
-  }
-
-  my $num = 0;
-  foreach my $s (1..24) {
-    next if !exists $sq{$s};
-    printf "CS-%02s:\n", $s;
-    my @nk = (sort keys %{$sq{$s}});
-    foreach my $n (@nk) {
-      ++$num;
-      my $sd = $sq{$s}{$n};
-      printf "       %2d.  %-20.20s $sd\n", $num, $n;
-    }
-  }
-
-  exit;
-} # show_restricted_data_info
-
 sub write_rtf_list {
   use MyRTF;
 
