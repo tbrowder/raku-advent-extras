@@ -15,6 +15,181 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT)
 
+sub write_endowment_part_report :Export(:DEFAULT) {
+  my $aref = shift @_;
+  my $phref      = $aref->{phref};
+  my $paref      = $aref->{paref};
+  my $stats_href = $aref->{stats_href};
+  my $GREP_href  = $aref->{GREP_href};
+  my $ghref      = $aref->{ghref};
+
+  my @pcols  = @{$paref};
+  my $nccols = @pcols;
+
+  # actual output columns
+  my $nc = 4;
+
+  # build the page as a templated file
+  my $f = './html-templates-master/endowment-part-report.html';
+  open my $fp, '>', $f
+    or die "$f: $!";
+
+  {
+    print $fp <<"HERE";
+<!doctype html>
+<html>
+  <head>
+    <?gen-web-site insert-css-links ?>
+    <title>USAFA Endowment Participation Update</title>
+    <style type="text/css">
+      table.cs-reps td.p10 {
+        padding-right: 10px;
+      }
+      table.cs-reps td.p15 {
+        padding-right: 15px;
+      }
+      table.cs-reps td.p25 {
+        padding-right: 25px;
+      }
+      table.cs-reps {
+        font-size: 0.9em;
+      }
+      table.cs-reps th.w125 {
+        width: 1.25in;
+      }
+      /* table.cs-reps th { height: 0.6in; } */
+    </style>
+  </head>
+
+  <body>
+    <?gen-web-site insert-nav-div ?>
+
+HERE
+  }
+
+  #my $ptitle = $phref->{title};
+  my $isodate = $GREP_href->{isodate};
+  my $ptitle = "Class of '65 Reunion Project - Participation Update as of $isodate";
+  print $fp "<h3>$ptitle</h3>\n";
+
+  print $fp "<div class='links'>\n";
+  print $fp "<table class='links'><tr>\n";
+  print $fp "<!-- SEVEN LINKS -->\n";
+  print $fp "<td>[Participation Report]</td>\n";
+  print $fp "<td>[<a href='./endowment-graytags-report.html'><span class='bold'>Gray Tag Givers</span></a>]</td>\n";
+  print $fp "<td>[<a href='./endowment-sqdn-report.html'><span class='bold'>Squadron Progress</span></a>]</td>\n";
+  print $fp "<td>[<a href='./wing-greps.html'><span class='bold'>Gift Overview</span></a>]</td>\n";
+  print $fp "<td>[<a href='./gift-competition.html'><span class='bold'>Sqdn Competition</span></a>]</td>\n";
+  print $fp "<td>[<a href='./in-memory-of.html'><span class='bold'>In Memory</a>]</td>\n";
+  print $fp "<td>[<a href='./in-honor-of.html'><span class='bold'>Honored</a>]</td>\n";
+  print $fp "</tr></table>\n";
+  print $fp "</div>\n";
+
+  print $fp "<h5>(A '[N]' in a cell means refer to note N at the bottom.)</h5>\n";
+
+=pod
+
+  print $fp "<h5>[CAUTION: THIS IS A NON-NORMATIVE DRAFT DOCUMENT UNDER ACTIVE REVISION]</h5>\n";
+
+=cut
+
+  # prep table (4 columns )========================
+  print $fp "      <td><table class='cs-reps'>\n";
+  # prep table (4 columns )========================
+  # 1 header row
+  # first header row
+  {
+    print $fp "        <tr>\n";
+
+    my $c0 = $pcols[0];
+    my $c1 = 'Number of Donors [1]';
+    my $c2 = 'Number of Living Grads [2]';
+    my $c3 = '% Grad Participation [3]';
+
+    print $fp "          <th class='LD TD RD BD w125'>$c0</th>\n";
+    print $fp "          <th class='LD TD RD BD w125'>$c1</th>\n";
+    print $fp "          <th class='LD TD RD BD w125'>$c2</th>\n";
+    print $fp "          <th class='LD TD RD BD w125'>$c3</th>\n";
+    print $fp "        </tr>\n";
+  }
+
+  # 25 data rows
+  foreach my $c0 (1..24) {
+
+    my $c1 = $phref->{$c0}{npledge};
+    my $c2 = $phref->{$c0}{ngrads};
+    my $c3 = $phref->{$c0}{prate};
+
+    # strip off '%'
+    $c3 =~ s{\%}{}g;
+
+    my $cs = sprintf "CS-%02d", $c0;
+
+    print $fp "        <tr>\n";
+    print $fp "          ";
+    print $fp "<td class='LD C RD'>$cs</td>";
+
+    print $fp "<td class='C'>$c1</td>";
+    print $fp "<td class='C'>$c2</td>";
+    print $fp "<td class='RJ p25 RD'>$c3</td>\n";
+    print $fp "        </tr>\n";
+  }
+
+  my $wing = $ghref->{wing}{gtag};
+
+  {
+    my $c0 = 'Grand Total';
+    my $c1 = $phref->{wing}{npledge};
+    my $c2 = $phref->{wing}{ngrads};
+
+    my $c3 = $phref->{wing}{prate};
+    $c3 = '' if (!defined $c3 || !$c3);
+
+    # strip off '%'
+    $c3 =~ s{\%}{}g;
+
+    print $fp "        <tr>\n";
+    print $fp "          ";
+    print $fp "<td class='LD TD C RD BD'>$c0</td>";
+
+    print $fp "<td class='C TD BD'>$c1</td>";
+    print $fp "<td class='C TD BD'>$c2</td>";
+    print $fp "<td class='RJ p25 TD BD RD'>$c3</td>";
+
+    print $fp "        </tr>\n";
+  }
+
+  # any footnotes
+
+  print $fp "    <tr>\n";
+  print $fp "      <td colspan='$nc' class='L0 B0 R0 LJ'>\n";
+  print $fp "        <p>Notes:</p>\n";
+  print $fp "        <ol>\n";
+  print $fp "          <li>$G::GREP_noteK</li>\n";
+  print $fp "          <li>$G::GREP_noteJ</li>\n";
+  print $fp "          <li>$G::GREP_noteI</li>\n";
+
+  #print $fp "          <li>$GREP_noteG</li>\n";
+
+  if ($wing) {
+    my $s = $wing > 1 ? 's' : '';
+    print $fp "          <li>Includes $wing gift$s not yet assigned to a squadron.</li>\n";
+  }
+
+  print $fp "        </ol>\n";
+  print $fp "      </td>\n";
+  print $fp "    </tr>\n";
+
+  # end prep table ================================
+  print $fp "    </table></td>\n";
+  # end prep table ================================
+
+  # end page
+  print $fp "  </body>\n";
+  print $fp "</html>\n";
+
+} # write_endowment_part_report
+
 sub write_endowment_gtags_report :Export(:DEFAULT) {
   my $aref = shift @_;
   my $ghref      = $aref->{ghref};

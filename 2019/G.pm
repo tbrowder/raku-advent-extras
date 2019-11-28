@@ -46,5 +46,8 @@ our %cmate;
 our $GREP_noteH;
 our $GREP_noteJ;
 our $GREP_noteO;
+our $GREP_noteI;
+our $GREP_noteK;
+
 # all modules must return a true value
 1;
