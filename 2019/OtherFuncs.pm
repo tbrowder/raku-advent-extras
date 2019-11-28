@@ -7,11 +7,9 @@ use warnings;
 use Perl6::Export::Attrs;
 use Carp;
 
-use lib '.';
+use lib ('.', './lib');
 use G;
-
-sub collect_pic_info :Export(:DEFAULT) {
-}
+use CLASSMATES_FUNCS qw(:all);
 
 sub Build_web_pages :Export(:DEFAULT) {
   my $maint = shift @_;
@@ -24,7 +22,7 @@ sub Build_web_pages :Export(:DEFAULT) {
 
   # a stored hash to save deceased status
   #   $dechref->{namekey} = 0 or 1 # 0 - not deceased, 1 - deceased
-  $dechref = get_CL_deceased();
+  $G::dechref = get_CL_deceased();
 
   # debug
   #print Dumper($dechref); die "debug exit";
@@ -83,9 +81,9 @@ sub Build_web_pages :Export(:DEFAULT) {
   print "Building class rosters (including lost classmates)...\n";
 
   # we need to know if 'CL.pm' has changed
-  if (!$CL_WAS_CHECKED) {
-    $CL_HAS_CHANGED = has_CL_changed();
-    $CL_WAS_CHECKED = 1;
+  if (!$G::CL_WAS_CHECKED) {
+    $G::CL_HAS_CHANGED = has_CL_changed();
+    $G::CL_WAS_CHECKED = 1;
   }
 
   # gather stats
@@ -103,11 +101,11 @@ sub Build_web_pages :Export(:DEFAULT) {
 
   # collect the data
   my %email = ();
-  collect_stats_and_build_rosters(\%stats, \@n, \@s, \%email, $CL_HAS_CHANGED);
+  collect_stats_and_build_rosters(\%stats, \@n, \@s, \%email, $G::CL_HAS_CHANGED);
 
   #print Dumper(\%stats); die "debug exit after stats are complete (using 'test_init'";
 
-  check_update_stats_db(\%stats, $CL_HAS_CHANGED);
+  check_update_stats_db(\%stats, $G::CL_HAS_CHANGED);
 
   #die "debug exit";
 
@@ -116,7 +114,7 @@ sub Build_web_pages :Export(:DEFAULT) {
   update_email_database({type => 'email',
 			 force => "$G::force",
 			 email_href => \%email,
-			 CL_has_changed => $CL_HAS_CHANGED
+			 CL_has_changed => $G::CL_HAS_CHANGED
 			});
 
   #==================================================
@@ -153,10 +151,10 @@ sub Build_web_pages :Export(:DEFAULT) {
   #print "Updating CS contact xls files...\n";
   write_excel_files({
 		     type           => 'cs',
-		     real_xls       => $real_xls,
-		     force          => $force_xls,
+		     real_xls       => $G::real_xls,
+		     force          => $G::force_xls,
 		     stats_href     => \%stats,
-		     CL_has_changed => $CL_HAS_CHANGED,
+		     CL_has_changed => $G::CL_HAS_CHANGED,
 		    });
 
   #==================================================
@@ -170,7 +168,7 @@ sub Build_web_pages :Export(:DEFAULT) {
   write_memorial_rolls({
 			delete         => 1,
 			force          => $G::force,
-			CL_has_changed => $CL_HAS_CHANGED,
+			CL_has_changed => $G::CL_HAS_CHANGED,
 		       });
 
   #==================================================
@@ -272,7 +270,7 @@ sub Build_web_pages :Export(:DEFAULT) {
   # build main menu for insertion into index.html
   # this MUST occur BEFORE calling 'write_news_feed'
   print "Building index.html.menu...\n";
-  WebSiteMenu::gen_yui_main_menu($debug);
+  WebSiteMenu::gen_yui_main_menu($G::debug);
 
   # update the atom feed (also builds the index page [from index.html.template])
   # see mydomains/perl-mods/CLASSMATES_FUNCS.pm: process_news_source
@@ -280,7 +278,7 @@ sub Build_web_pages :Export(:DEFAULT) {
   write_news_feed(\@G::ofils, $USAFA1965, $USAFA1965_tweetfile,
 		 $maint,
 		 {
-		  usafa_pledge_form => $GREP_pledge_form,
+		  usafa_pledge_form => $G::GREP_pledge_form,
 		 }
 		 );
 

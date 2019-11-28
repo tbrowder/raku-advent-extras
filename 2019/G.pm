@@ -33,5 +33,13 @@ our $useborder     = 0;
 our $usepics       = 0;
 our $warn          = 0;
 
+our $CL_HAS_CHANGED = 0;
+our $CL_WAS_CHECKED = 0;
+our $real_xls       = 0;
+our $force_xls      = 0;
+our $GREP_pledge_form;
+
+our $dechref;
+
 # all modules must return a true value
 1;

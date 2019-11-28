@@ -69,7 +69,7 @@ use PicFuncs;     # for picture and montage generation
 # file for storing a hash
 my $decfil = './.deceased_hash_storage';
 # the hash ref
-my $dechref;
+$G::dechref;
 
 my %geodata = %GEO_DATA_USAFA::geodata;
 my $tlspm = './cgi-common/TLSDATA.pm';
@@ -84,15 +84,15 @@ use USAFA_SiteNews;
 # some global objects
 my %cmate = %CL::mates;
 my $GREP_file = './.grep_data.storable';
-my $GREP_pledge_form = './pages/Class-of-1965-50th-Reunion-Pledge-Form.pdf';
+$G::GREP_pledge_form = './pages/Class-of-1965-50th-Reunion-Pledge-Form.pdf';
 my $GREP_update_asof = '';
 my $GREP_update_asof_iso  = '';
 my $GREP_update_asof_file = './.grep_update_asof_file';
 my $AOGID_file   = './.aogid_data.storable';   # keyed by AOG ID
 my $AOGINFO_file = './.aoginfo_data.storable'; # keyed by classmate key
 
-my $CL_HAS_CHANGED = 0;
-my $CL_WAS_CHECKED = 0;
+$G::CL_HAS_CHANGED = 0;
+$G::CL_WAS_CHECKED = 0;
 
 my $GREP_NS = 24; # as of 20150604, CS-25 is not used for the moment
 #my $GREP_NS = 25; # as of 20150604, CS-25 is for non-designated gifts
@@ -326,14 +326,14 @@ my $draft         = 0;
 $G::ires          = 1200; # dpi (dots per inch)
 my $typ           = 'tif';
 $G::force         = 0;
-my $force_xls     = 0;
+$G::force_xls     = 0;
 $G::pstats        = 0; # picture stats
 $G::warn          = 1;
 my $redo_deceased = 0;
 my $use_cloud     = 0;
 my $submap        = 0;
 my $maint         = 0;
-my $real_xls      = 1;
+$G::real_xls      = 1;
 my $mail_typ      = '';
 my $frep          = 0;
 my $genS          = 0; # extra arg for $gen
@@ -538,7 +538,7 @@ foreach my $arg (@ARGV) {
 =cut
 
   elsif ($arg =~ m{\A -rea}xms) {
-    $real_xls = 1;
+    $G::real_xls = 1;
   }
   elsif ($arg =~ m{\A -so}xms) {
     # sort keys, exit from there
@@ -579,7 +579,7 @@ foreach my $arg (@ARGV) {
     $G::warn  = 1;
   }
   elsif ($arg =~ m{\A -f [\w\W]* x }xms) {
-    $force_xls = 1;
+    $G::force_xls = 1;
   }
   elsif ($arg =~ m{\A -fo}xms) {
     $G::force = 1;
@@ -948,7 +948,7 @@ sub build_templated_pages {
     U65::insert_nav_into_template($fpi, $fpo, $level, $typfil,
 				  $aref,
 				 {
-				  usafa_pledge_form => $GREP_pledge_form,
+				  usafa_pledge_form => $G::GREP_pledge_form,
 				 });
   }
 
@@ -1572,7 +1572,7 @@ sub print_picture_set_as_table {
         my $is_deceased = $deceased ? 1 : 0;
 
         # last run status
-        my $last_deceased = exists $dechref->{$n} ? $dechref->{$n} : 0;
+        my $last_deceased = exists $G::dechref->{$n} ? $G::dechref->{$n} : 0;
 
         # redo or not?
         my $update_deceased = ($last_deceased == $is_deceased) ? 0 : 1;
@@ -1585,9 +1585,9 @@ sub print_picture_set_as_table {
 	}
 
         # update the last run status
-        $dechref->{$n} = $is_deceased;
+        $G::dechref->{$n} = $is_deceased;
         # and save it
-        put_CL_deceased($dechref);
+        put_CL_deceased($G::dechref);
 
 	# produce the image reference
 	# the image should be centered
