@@ -13,7 +13,54 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
 
-sub print_html5_header {
+sub build_non_html_pages :Export(:DEFAULT) {
+  # local vars
+  my ($idir, @fils, $level, $nf, $odir);
+
+  my $debug = 0;
+
+  #=====================================================
+  # level 1 files (non-html, copy only)
+  # handle some non-html files
+  $level = 1;
+  $idir = './html-templates-master/site-admin';
+  die "No such dir '$idir'" if !-d $idir;
+  $odir = './web-site/site-admin';
+  die "No such dir '$odir'" if !-d $odir;
+  @fils = glob("$idir/*.txt");
+  foreach my $fi (@fils) {
+    my $basename = basename($fi);
+    my $fo = "$odir/$basename";
+    if ($debug) {
+      printf "DEBUG(%s,%u):\n", __FILE__, __LINE__;
+      print  "  \$fi = '$fi'\n";
+      print  "  \$fo = '$fo'\n";
+      next;
+    }
+
+    copy $fi, $fo;
+  }
+
+  # also copy the css
+  qx(cp -r "$idir/mailing-list-etiquette_files" $odir);
+
+  #=====================================================
+  # web-site/site-admin/images
+  $idir = './html-templates-master/site-admin/images';
+  die "No such dir '$idir'" if !-d $idir;
+  $odir = './web-site/site-admin/images';
+  die "No such dir '$odir'" if !-d $odir;
+  @fils = glob("$idir/*.png");
+  foreach my $fi (@fils) {
+    my $basename = basename($fi);
+    my $fo = "$odir/$basename";
+    copy($fi, $fo)
+      or die "Copy error: $!";
+  }
+
+} # build_non_html_pages
+
+sub print_html5_header :Export(:DEFAULT) {
   # use html5 only
   # note the opening "html" tag must be closed by another function
   my $fp = shift @_;
