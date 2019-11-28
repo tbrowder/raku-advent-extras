@@ -14,6 +14,12 @@ use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
 
+sub get_CL_deceased :Export(:DEFAULT) {
+  my $hash_ref = retrieve($G::decfil) if -e $G::decfil;
+  $hash_ref = {} if !defined $hash_ref;
+  return $hash_ref;
+} # get_CL_deceased
+
 sub print_cs_reps_table_data :Export(:DEFAULT) {
   my $fp    = shift @_;
   my $nalts = shift @_;

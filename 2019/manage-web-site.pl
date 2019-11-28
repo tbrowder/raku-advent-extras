@@ -863,12 +863,6 @@ sub build_templated_cgi_files {
 
 =cut
 
-sub get_CL_deceased {
-  my $hash_ref = retrieve($decfil) if -e $decfil;
-  $hash_ref = {} if !defined $hash_ref;
-  return $hash_ref;
-} # get_CL_deceased
-
 sub put_CL_deceased {
   my $hash_ref = shift @_;
   store $hash_ref, $decfil;
