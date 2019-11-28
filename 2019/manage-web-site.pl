@@ -863,34 +863,6 @@ sub build_templated_cgi_files {
 
 =cut
 
-sub has_CL_changed {
-  # test against CL.pm with an md5 hash to see if it has changed
-  use Digest::MD5::File qw(file_md5_hex);
-
-  my $cfil = 'CL.pm';
-  my $hfil = '.clpm.md5hash'; # keep the last hash here
-
-  # current hash:
-  my $new_hash = file_md5_hex($cfil);
-  # previous hash, if any
-  my $old_hash_ref = retrieve($hfil) if -e $hfil;
-  $old_hash_ref = '' if !defined $old_hash_ref;
-  my $old_hash = $old_hash_ref ? $$old_hash_ref : '';
-
-  my $changed = 0;
-  if ($old_hash eq $new_hash) {
-    print "Note that '$cfil' has NOT changed.\n";
-  }
-  else {
-    store \$new_hash, $hfil;
-    print "Note that '$cfil' HAS changed.\n";
-    $changed = 1;
-  }
-
-  return $changed;
-
-} # has_CL_changed
-
 sub check_update_stats_db {
   my $stats          = shift @_; # hash of stats objects
   my $CL_has_changed = shift @_;

@@ -4,6 +4,7 @@ use feature 'say';
 use strict;
 use warnings;
 
+use Storable;
 use Readonly;
 use Perl6::Export::Attrs;
 use Carp;
@@ -13,6 +14,34 @@ use G;
 use CLASSMATES_FUNCS qw(:all);
 
 #sub Build_web_pages :Export(:DEFAULT) {
+
+sub has_CL_changed :Export(:DEFAULT) {
+  # test against CL.pm with an md5 hash to see if it has changed
+  use Digest::MD5::File qw(file_md5_hex);
+
+  my $cfil = 'CL.pm';
+  my $hfil = '.clpm.md5hash'; # keep the last hash here
+
+  # current hash:
+  my $new_hash = file_md5_hex($cfil);
+  # previous hash, if any
+  my $old_hash_ref = retrieve($hfil) if -e $hfil;
+  $old_hash_ref = '' if !defined $old_hash_ref;
+  my $old_hash = $old_hash_ref ? $$old_hash_ref : '';
+
+  my $changed = 0;
+  if ($old_hash eq $new_hash) {
+    print "Note that '$cfil' has NOT changed.\n";
+  }
+  else {
+    store \$new_hash, $hfil;
+    print "Note that '$cfil' HAS changed.\n";
+    $changed = 1;
+  }
+
+  return $changed;
+
+} # has_CL_changed
 
 sub put_CL_deceased :Export(:DEFAULT) {
   my $hash_ref = shift @_;
