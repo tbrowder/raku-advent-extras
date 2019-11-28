@@ -703,7 +703,7 @@ elsif ($map) {
   GEO_MAPS_USAFA::get_geocode_submap_keys(\%G::cmate, \%geodata, \%map);
 
   my @use
-    = qw(
+    = <
 	  all
 	  all_show
 	  debug
@@ -712,12 +712,12 @@ elsif ($map) {
 	  state
 	  ctry
 	  reps
-      );
+      >;
   my %use;
   @use{@use} = ();
 
   my @styp
-    = qw(
+    = <
 	  sqdn
 	  sqdn_show
 	  grp
@@ -726,7 +726,7 @@ elsif ($map) {
 	  state_show
 	  ctry
 	  ctry_show
-       );
+       >;
   my %styp;
   @styp{@styp} = ();
 
