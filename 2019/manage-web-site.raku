@@ -674,11 +674,11 @@ elsif $rewrite {
     U65::write_CL_module($ofil, %CL::mates);
 }
 elsif $sqdnP {
-    printf "Finding source picture files for CS-%02d...\n", $sqdnP;
+    sprintf("Finding source picture files for CS-%02d...", $sqdnP).put;
     find_sqdn_pics($sqdnP);
 }
 elsif $G::sqdn {
-    printf "Writing an rtf file of contact data for CS-%02d...\n", $G::sqdn;
+    sprintf("Writing an rtf file of contact data for CS-%02d...", $G::sqdn).put;
     write_rtf_list($G::sqdn, %CL::mates);
 }
 elsif $address {
