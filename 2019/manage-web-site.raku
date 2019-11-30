@@ -143,90 +143,15 @@ $G::template1b = 'usafa-template1-legal.ps';   # US Legal
 #=========================================
 
 # menu ===================================
-if !@*ARGS {
-    say qq:to /HERE/;
-Usage: $*PROGRAM -gen | -cvt [-final][-useborder][-usepics][-debug][-res=X]
-                      [-force][-typ=X][-person][-stats][-warn]
-
-Options:
-
-  -web       Builds web pages for usafa-1965.org
-
-  -frep=YYYYMMDD
-             Reads USAFA Endowment fund raising report forms and builds appropriate
-               pages.
-
-  -tweet     Send a tweet (and email) based on latest news.
-
-  -map       Write new classmates map files.
-
-  -email     Send email (no tweet) based on latest news.
-
-  -mail[=X]  Generate e-mail address data for classmates.
-               Use 'X' for which list: 'all', 'admin'; default is 'admin'.
-
-  -restrict  Show classmates with 'hide_data=X' restrictions
-
-  -contacts  Write a Google-compatible csv file for classmates
-
-  -preps=X   Write a prospective list of reps from X where X is
-               a comma-separated list of squadron numbers (or 'all').
-
-  -gcon      Download Tom Browder's Google Contacts and Groups to stored
-               hash references.
-
-  -add       Add new data to CL module.
-
-  -sort      Output ordered list of CL keys to stdout.
-
-  -turn      Output ordered list of nobct1961 names to stdout.
-
-  -rpstats   Report raw pixel statistics on pictures found.
-
-  -sqdnP=X   Lists source picture filenames for those in CS-X
-
-  -sqdn=X    Writes a docx file of contact data for those in CS-X
-
-  -address=F Writes a dox file of addresses for those keys in file F
-
-  -geo       Writes data for Google geocoding requests.
-
-  -gen[=X]   Generates a pdf montage of pics for each CS, or CS=X.
-
-  -collect   Collect total class info from pic source dir
-
-  -memorial  Write a list of deceased for memorial roll call
-
-  -u65=X     Read a CS xls or xlsx file named 'X'
-
-Other:
-
-  -aog       Read AOG data (a CSV file)
-
-  -logo      Write CS logo history files
-
-  -war       Write War Memorial files
-
-  -real      Create xls files with real data.
-  -maint     Include maintenance notice pop-up.
-  -use-cloud Use cloud files for most images.
-  -deceased  Force updating output pics for deceased members.
-  -no-new    Don't try to build a new picture for the web if it's missing.
-  -final     Eliminates the 'DRAFT' overlay, uses one file per person.
-  -force     Allow overwriting existing files without warning.
-  -force-xls Create new xls files.
-  -person    Creates one file per person, with name.
-  -res=X     Choose input resolution in K dpi: 3, 6, 12 (default: 12)
-  -pstats    Reports statistics on pictures found.
-  -typ=X     Choose input bitmap type: tif, gif, jpg (default: tif)
-  -warn      Warn about missing files.
-  -nopics    Show data for classmates with no pictures.
-  -debug
-
-  -rewrite   Rewrites the CL.pm module
-
+my $usage = qq:to/HERE/;
+Usage: $*PROGRAM -gen | -help
+         [-final][-useborder][-usepics][-debug][-res=X]
+         [-force][-typ=X][-person][-stats][-warn]
 HERE
-  exit;
+
+if !@*ARGS {
+    say $usage;
+    exit;
 }
 
 # execution modes
@@ -280,9 +205,10 @@ my $cshi          = 24;
 $G::nonewpics = 0; # don't make new pics for the web if they don't exist
 @G::ofils     = (); # track output files written
 
-for @*ARGS -> $arg {
+for @*ARGS {
 
-    my $val;
+    when /^ '-h'/ { long-help }
+    my ($arg, $val);
     my $idx = index $arg, '=';
     if ($idx >= 0) {
         $val = substr $arg, $idx+1;
@@ -766,6 +692,92 @@ sub zero-modes {
     $web      = 0;
     $nopics   = 0;
     # 21
+}
+
+sub long-help {
+
+    say $usage;
+    say qq:to/HERE/;
+
+Options:
+
+  -web       Builds web pages for usafa-1965.org
+
+  -frep=YYYYMMDD
+             Reads USAFA Endowment fund raising report forms and builds appropriate
+               pages.
+
+  -tweet     Send a tweet (and email) based on latest news.
+
+  -map       Write new classmates map files.
+
+  -email     Send email (no tweet) based on latest news.
+
+  -mail[=X]  Generate e-mail address data for classmates.
+               Use 'X' for which list: 'all', 'admin'; default is 'admin'.
+
+  -restrict  Show classmates with 'hide_data=X' restrictions
+
+  -contacts  Write a Google-compatible csv file for classmates
+
+  -preps=X   Write a prospective list of reps from X where X is
+               a comma-separated list of squadron numbers (or 'all').
+
+  -gcon      Download Tom Browder's Google Contacts and Groups to stored
+               hash references.
+
+  -add       Add new data to CL module.
+
+  -sort      Output ordered list of CL keys to stdout.
+
+  -turn      Output ordered list of nobct1961 names to stdout.
+
+  -rpstats   Report raw pixel statistics on pictures found.
+
+  -sqdnP=X   Lists source picture filenames for those in CS-X
+
+  -sqdn=X    Writes a docx file of contact data for those in CS-X
+
+  -address=F Writes a dox file of addresses for those keys in file F
+
+  -geo       Writes data for Google geocoding requests.
+
+  -gen[=X]   Generates a pdf montage of pics for each CS, or CS=X.
+
+  -collect   Collect total class info from pic source dir
+
+  -memorial  Write a list of deceased for memorial roll call
+
+  -u65=X     Read a CS xls or xlsx file named 'X'
+
+Other:
+
+  -aog       Read AOG data (a CSV file)
+
+  -logo      Write CS logo history files
+
+  -war       Write War Memorial files
+
+  -real      Create xls files with real data.
+  -maint     Include maintenance notice pop-up.
+  -use-cloud Use cloud files for most images.
+  -deceased  Force updating output pics for deceased members.
+  -no-new    Don't try to build a new picture for the web if it's missing.
+  -final     Eliminates the 'DRAFT' overlay, uses one file per person.
+  -force     Allow overwriting existing files without warning.
+  -force-xls Create new xls files.
+  -person    Creates one file per person, with name.
+  -res=X     Choose input resolution in K dpi: 3, 6, 12 (default: 12)
+  -pstats    Reports statistics on pictures found.
+  -typ=X     Choose input bitmap type: tif, gif, jpg (default: tif)
+  -warn      Warn about missing files.
+  -nopics    Show data for classmates with no pictures.
+  -debug
+
+  -rewrite   Rewrites the CL.pm module
+
+HERE
+  exit;
 }
 
 =begin comment
