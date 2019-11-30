@@ -201,8 +201,11 @@ Options:
 
   -gen[=X]   Generates a pdf montage of pics for each CS, or CS=X.
 
+=begin comment
+  # now done in a separate program
   -cvt       Converts a collection of bitmap files to eps files.  Not
              normally needed.
+=end comment
 
   -collect   Collect total class info from pic source dir
 
@@ -245,7 +248,7 @@ my $add           = 0;
 my $aog           = 0;
 my $collect       = 0;
 my $csv           = 0;
-my $cvt           = 0;
+#my $cvt           = 0;
 my $gcon          = 0;
 my $gen           = 0;
 my $geo           = 0;
@@ -274,7 +277,7 @@ sub zero_modes {
   $aog      = 0;
   $collect  = 0;
   $csv      = 0;
-  $cvt      = 0;
+  #$cvt      = 0;
   $gcon     = 0;
   $gen      = 0;
   $geo      = 0;
@@ -334,14 +337,16 @@ for @*ARGS -> $arg {
 
   # execution modes ==============
   #  1
+  =begin comment
   #if ($arg =~ m{\A -cv}xms) {
   if $arg ~~ /^ '-cv'/ {
     zero_modes();
     $cvt = 1;
   }
+  =end comment
   #  2
   #elsif ($arg =~ m{\A -gen}xms) {
-  elsif $arg ~~ /^ '-gen'/ {
+  if $arg ~~ /^ '-gen'/ {
     zero_modes();
     $gen  = 1;
     $genS = 0;
@@ -796,10 +801,12 @@ elsif ($map) {
 elsif ($preps) {
   write_possible_reps_list(@G::ofils, $preps);
 }
+=begin comment
 elsif ($cvt) {
   print "Converting pics to eps...\n";
   convert_pics();
 }
+=end comment
 elsif ($collect) {
   print "Collecting pics info for CL module...\n";
   collect_pic_info($orig_pics_dir);
