@@ -2,6 +2,119 @@ package ManageWebSite;
 
 # a module for functions used by 'manage-web-site.pl
 
+use Perl6::Export::Attrs;
+
+sub add_new_CL_data :Export(:DEFAULT) {
+  # this is usually a one-off function to handle special CL updates
+
+  die "This function is turned off until needed.";
+
+=pod
+
+  my @data
+    = (
+       # 3 fields: key first name, last name, suffix
+       # (from 1961 USAFA Christmas card)
+       # 27 new names
+       'anderson-w   Wilbur Anderson',
+       'ayotte-a     Alphonse Ayotte',
+       'baucom-r     Robert Baucom',
+       'borkoski-p   Peter Borkoski',
+       'burdue-j     Jimmy Burdue',
+       'covey-k      King Covey',
+       'daugherty-s  Stuart Daugherty',
+       'de^vos-j     James De~Vos',
+       'denton-d     Dan Denton',
+       'evans-a      Andrew Evans',
+       'finnegan-j   Joseph Finnegan',
+       'gillespie-r  Robert Gillespie Jr.',
+       'goldman-e    Edward Goldman',
+       'haker-k      Keith Haker',
+       'hansen-d     David Hansen',
+       'harrington-r Richard Harrington',
+       'helser-r     Roger Helser',
+       'hogan-j      John Hogan Jr.',
+       'hoppe-t      Thomas Hoppe',
+       'lee-j        Joseph Lee',
+       'mack-r       Ronald Mack',
+       'morrison-r   Russell Morrison',
+       'noel-g       Gary Noel',
+       'oystol-l     Lars Oystol',
+       'pearson-p    Philip Pearson',
+       'thurston-r   Roger Thurston',
+       'witty-w      William Witty Jr.',
+      );
+
+  my %h = ();
+
+  foreach my $line (@data) {
+    my @d = split(' ', $line);
+    die "bad line '$line'" if (@d < 3 || @d > 4);
+    my $key   = shift @d;
+    my $first = shift @d;
+
+    # last name may need a space with the '~' character
+    my $last  = shift @d;
+    $last =~ s{~}{ }g;
+
+    my $suff = @d ? shift @d : '';
+
+    #my $name = "debug: $key $last, $first";
+    #$name .= " $suff" if $suff;
+    #print $name, "\n";
+
+    $h{$key}{first} = $first;
+    $h{$key}{last}  = $last;
+    $h{$key}{suff}  = $suff;
+  }
+
+  #print Dumper(\%h); die "debug exit";
+  #print Dumper(\%cmate); die "debug exit";
+
+  # check for duplicate keys and fill otherwise
+  my @used = qw(first last suff file);
+  my %used;
+  @used{@used} = ();
+  foreach my $k (keys %h) {
+    if (exists $cmate{$k}) {
+      print "Skipping duplicate key '$k'\n";
+      next;
+    }
+
+    $cmate{$k}{first} = $h{$k}{first};
+    $cmate{$k}{last}  = $h{$k}{last};
+    $cmate{$k}{suff}  = $h{$k}{suff};
+    $cmate{$k}{file}  = 'pics-pages/no-picture.tif';
+
+    # fill rest of CL with default values
+    foreach my $attr (@U65::attrs) {
+      next if exists $used{$attr};
+      next if ($attr =~ m{\A \#}xms);
+
+      die "What? ($attr)" if ($attr =~ m{\A last}xms);
+
+      if (exists $U65::dq{$attr}) {
+	$cmate{$k}{$attr} = "";
+      }
+      elsif (exists $U65::nq{$attr}) {
+	$cmate{$k}{$attr} = 0;
+      }
+      else {
+	$cmate{$k}{$attr} = '';
+      }
+    }
+
+  }
+
+  my $ofil = 't.pm';
+  U65::write_CL_module($ofil, \%cmate);
+
+  print "Normal end.  See file '$ofil' (compare with 'CL.pm').\n";
+
+=cut
+
+} # add_new_CL_data
+
 sub read_aog_data {
 
   die "This function is turned off until needed.";
@@ -531,117 +644,8 @@ sub make_cs_sqdn_logo_history {
 
   return;
 
-  =cut
+=cut
 
 } # make_cs_sqdn_logo_history
 
-sub add_new_CL_data {
-  # this is usually a one-off function to handle special CL updates
-
-  die "This function is turned off until needed.";
-
-=pod
-
-  my @data
-    = (
-       # 3 fields: key first name, last name, suffix
-       # (from 1961 USAFA Christmas card)
-       # 27 new names
-       'anderson-w   Wilbur Anderson',
-       'ayotte-a     Alphonse Ayotte',
-       'baucom-r     Robert Baucom',
-       'borkoski-p   Peter Borkoski',
-       'burdue-j     Jimmy Burdue',
-       'covey-k      King Covey',
-       'daugherty-s  Stuart Daugherty',
-       'de^vos-j     James De~Vos',
-       'denton-d     Dan Denton',
-       'evans-a      Andrew Evans',
-       'finnegan-j   Joseph Finnegan',
-       'gillespie-r  Robert Gillespie Jr.',
-       'goldman-e    Edward Goldman',
-       'haker-k      Keith Haker',
-       'hansen-d     David Hansen',
-       'harrington-r Richard Harrington',
-       'helser-r     Roger Helser',
-       'hogan-j      John Hogan Jr.',
-       'hoppe-t      Thomas Hoppe',
-       'lee-j        Joseph Lee',
-       'mack-r       Ronald Mack',
-       'morrison-r   Russell Morrison',
-       'noel-g       Gary Noel',
-       'oystol-l     Lars Oystol',
-       'pearson-p    Philip Pearson',
-       'thurston-r   Roger Thurston',
-       'witty-w      William Witty Jr.',
-      );
-
-  my %h = ();
-
-  foreach my $line (@data) {
-    my @d = split(' ', $line);
-    die "bad line '$line'" if (@d < 3 || @d > 4);
-    my $key   = shift @d;
-    my $first = shift @d;
-
-    # last name may need a space with the '~' character
-    my $last  = shift @d;
-    $last =~ s{~}{ }g;
-
-    my $suff = @d ? shift @d : '';
-
-    #my $name = "debug: $key $last, $first";
-    #$name .= " $suff" if $suff;
-    #print $name, "\n";
-
-    $h{$key}{first} = $first;
-    $h{$key}{last}  = $last;
-    $h{$key}{suff}  = $suff;
-  }
-
-  #print Dumper(\%h); die "debug exit";
-  #print Dumper(\%cmate); die "debug exit";
-
-  # check for duplicate keys and fill otherwise
-  my @used = qw(first last suff file);
-  my %used;
-  @used{@used} = ();
-  foreach my $k (keys %h) {
-    if (exists $cmate{$k}) {
-      print "Skipping duplicate key '$k'\n";
-      next;
-    }
-
-    $cmate{$k}{first} = $h{$k}{first};
-    $cmate{$k}{last}  = $h{$k}{last};
-    $cmate{$k}{suff}  = $h{$k}{suff};
-    $cmate{$k}{file}  = 'pics-pages/no-picture.tif';
-
-    # fill rest of CL with default values
-    foreach my $attr (@U65::attrs) {
-      next if exists $used{$attr};
-      next if ($attr =~ m{\A \#}xms);
-
-      die "What? ($attr)" if ($attr =~ m{\A last}xms);
-
-      if (exists $U65::dq{$attr}) {
-	$cmate{$k}{$attr} = "";
-      }
-      elsif (exists $U65::nq{$attr}) {
-	$cmate{$k}{$attr} = 0;
-      }
-      else {
-	$cmate{$k}{$attr} = '';
-      }
-    }
-
-  }
-
-  my $ofil = 't.pm';
-  U65::write_CL_module($ofil, \%cmate);
-
-  print "Normal end.  See file '$ofil' (compare with 'CL.pm').\n";
-
-=cut
-
-} # add_new_CL_data
+1; # return mandatory true value
