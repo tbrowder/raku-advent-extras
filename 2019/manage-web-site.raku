@@ -168,6 +168,8 @@ Options:
 
   -restrict  Show classmates with 'hide_data=X' restrictions
 
+=begin comment
+  # obsolete
   -csv[=X]   Generate a csv file for various purposes.
 
                Use 'X' for type:
@@ -176,6 +178,8 @@ Options:
                  cs    - full data dump by squadron
 
                  ', 'admin'
+=end comment
+
   -contacts  Write a Google-compatible csv file for classmates
 
   -preps=X   Write a prospective list of reps from X where X is
@@ -248,7 +252,7 @@ HERE
 my $add           = 0;
 my $aog           = 0;
 my $collect       = 0;
-my $csv           = 0;
+#my $csv           = 0;
 #my $cvt           = 0;
 my $gcon          = 0;
 my $gen           = 0;
@@ -265,7 +269,7 @@ my $tweet         = 0;
 my $u65           = 0;
 my $war           = 0; # one-shot (um, used twice)
 my $web           = 0;
-my $raz           = 0;
+#my $raz           = 0;
 my $nopics        = 0;
 my $sqdnP         = 0;
 my $address       = 0;
@@ -277,7 +281,7 @@ sub zero_modes {
   $address  = 0;
   $aog      = 0;
   $collect  = 0;
-  $csv      = 0;
+#  $csv      = 0;
   #$cvt      = 0;
   $gcon     = 0;
   $gen      = 0;
@@ -295,7 +299,7 @@ sub zero_modes {
   $u65      = 0;
   $war      = 0;
   $web      = 0;
-  $raz      = 0;
+#  $raz      = 0;
   $nopics   = 0;
   # 24
 }
@@ -476,6 +480,8 @@ for @*ARGS -> $arg {
     $mail_typ = $val;
   }
   # 17
+  =begin comment
+  # obsolete!!
   #elsif ($arg =~ m{\A -csv}xms) {
   elsif $arg ~~ /^ '-csv'/ {
     die "ERROR: '-csv=X' needs '=cs' or '=admin'"
@@ -483,6 +489,7 @@ for @*ARGS -> $arg {
     zero_modes();
     write_csv_file({ type => $val});
   }
+  =end comment
   # 18
   #elsif ($arg =~ m{\A -me}xms) {
   elsif $arg ~~ /^ '-me'/ {
@@ -501,11 +508,14 @@ for @*ARGS -> $arg {
     #read_u65_cs_excel_data($val);
   }
   # 20
+  =begin comment
+  # obsolete!!
   #elsif ($arg =~ m{\A -raz}xms) {
   elsif $arg ~~ /^ '-raz'/ {
     zero_modes();
     $raz = 1;
   }
+  =end comment
   # 21
   #elsif ($arg =~ m{\A -res}xms) {
   elsif $arg ~~ /^ '-res'/ {
@@ -687,9 +697,12 @@ if ($gen) {
 elsif ($u65) {
   read_u65_cs_excel_data($u65);
 }
+=begin comment
+# obsolete
 elsif ($raz) {
   write_excel_files_for_raz();
 }
+=end comment
 elsif ($restrict) {
   show_restricted_data_info();
 }
