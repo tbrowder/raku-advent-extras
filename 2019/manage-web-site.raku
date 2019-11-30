@@ -132,7 +132,6 @@ $G::picwidth  = 75;  # desired width for clipping (use min natural width)
 #
 # use GraphicsMagick to resize, see "-geometry" option
 
-
 $G::ncols =  8; # max number pics across
 $G::nrows =  4; # max number rows
 # horizontal spacing between pictures
@@ -168,18 +167,6 @@ Options:
 
   -restrict  Show classmates with 'hide_data=X' restrictions
 
-=begin comment
-  # obsolete
-  -csv[=X]   Generate a csv file for various purposes.
-
-               Use 'X' for type:
-                 admin - CS reps and alts. by squadron for training and status
-                         (the default)
-                 cs    - full data dump by squadron
-
-                 ', 'admin'
-=end comment
-
   -contacts  Write a Google-compatible csv file for classmates
 
   -preps=X   Write a prospective list of reps from X where X is
@@ -205,12 +192,6 @@ Options:
   -geo       Writes data for Google geocoding requests.
 
   -gen[=X]   Generates a pdf montage of pics for each CS, or CS=X.
-
-=begin comment
-  # now done in a separate program
-  -cvt       Converts a collection of bitmap files to eps files.  Not
-             normally needed.
-=end comment
 
   -collect   Collect total class info from pic source dir
 
@@ -252,8 +233,6 @@ HERE
 my $add           = 0;
 my $aog           = 0;
 my $collect       = 0;
-#my $csv           = 0;
-#my $cvt           = 0;
 my $gcon          = 0;
 my $gen           = 0;
 my $geo           = 0;
@@ -269,40 +248,10 @@ my $tweet         = 0;
 my $u65           = 0;
 my $war           = 0; # one-shot (um, used twice)
 my $web           = 0;
-#my $raz           = 0;
 my $nopics        = 0;
 my $sqdnP         = 0;
 my $address       = 0;
-# 24
-
-# ensure we don't have mutually exclusive modes
-sub zero_modes {
-  $add      = 0;
-  $address  = 0;
-  $aog      = 0;
-  $collect  = 0;
-#  $csv      = 0;
-  #$cvt      = 0;
-  $gcon     = 0;
-  $gen      = 0;
-  $geo      = 0;
-  $logo     = 0;
-  $mail     = 0;
-  $map      = 0;
-  $mem      = 0;
-  $preps    = 0;
-  $restrict = 0;
-  $rewrite  = 0;
-  $G::sqdn     = 0;
-  $sqdnP    = 0;
-  $tweet    = 0;
-  $u65      = 0;
-  $war      = 0;
-  $web      = 0;
-#  $raz      = 0;
-  $nopics   = 0;
-  # 24
-}
+# 21
 
 my $send          = 0; # really send the tweet
 my $sendmail      = 0; # really send the tweet as mail
@@ -325,413 +274,306 @@ $G::real_xls      = 1;
 my $mail_typ      = '';
 my $frep          = 0;
 my $genS          = 0; # extra arg for $gen
-my $cslo = 1;
-my $cshi = 24;
+my $cslo          = 1;
+my $cshi          = 24;
 
 $G::nonewpics = 0; # don't make new pics for the web if they don't exist
 @G::ofils     = (); # track output files written
 
 for @*ARGS -> $arg {
 
-  my $val;
-  my $idx = index $arg, '=';
-  if ($idx >= 0) {
-    $val = substr $arg, $idx+1;
-    $arg = substr $arg, 0, $idx;
-  }
+    my $val;
+    my $idx = index $arg, '=';
+    if ($idx >= 0) {
+        $val = substr $arg, $idx+1;
+        $arg = substr $arg, 0, $idx;
+    }
 
-  # execution modes ==============
-  #  1
-  =begin comment
-  #if ($arg =~ m{\A -cv}xms) {
-  if $arg ~~ /^ '-cv'/ {
-    zero_modes();
-    $cvt = 1;
-  }
-  =end comment
-  #  2
-  #elsif ($arg =~ m{\A -gen}xms) {
-  if $arg ~~ /^ '-gen'/ {
-    zero_modes();
-    $gen  = 1;
-    $genS = 0;
-    if (defined $val) {
+    # execution modes ==============
+    #  1
+    if $arg ~~ /^ '-gen'/ {
+        zero-modes;
+        $gen  = 1;
+        $genS = 0;
+        if (defined $val) {
+            if ($val < $cslo || $val > $cshi) {
+                die "Sqdn = '$val' is not an integer in the inclusive range $cslo-$cshi\n";
+            }
+            $genS = $val
+        }
+
+    }
+    #  2
+    elsif $arg ~~ /^ '-co'/ {
+        zero-modes;
+        $collect = 1;
+    }
+    #  3
+    elsif $arg ~~ /^ '-we'/ {
+        zero-modes;
+        $web = 1;
+    }
+    #  4
+    elsif $arg ~~ /^ '-war'/ {
+        zero-modes;
+        $war = 1;
+    }
+    #  5
+    elsif $arg ~~ /^ '-lo'/ {
+        zero-modes;
+        $logo = 1;
+    }
+    #  6/20
+    elsif $arg ~~ /^ '-sq'/ {
+        zero-modes;
+        die "Undefined arg value for arg '$arg'" if !defined $val;
+        if $val !~~ /[0..9]+/ {
+            die "Sqdn = '$val' is not an integer in the inclusive range $cslo-$cshi\n";
+        }
         if ($val < $cslo || $val > $cshi) {
             die "Sqdn = '$val' is not an integer in the inclusive range $cslo-$cshi\n";
         }
-        $genS = $val
-    }
 
-  }
-  #  3
-  #elsif ($arg =~ m{\A -co}xms) {
-  elsif $arg ~~ /^ '-co'/ {
-    zero_modes();
-    $collect = 1;
-  }
-  #  4
-  #elsif ($arg =~ m{\A -we}xms) {
-  elsif $arg ~~ /^ '-we'/ {
-    zero_modes();
-    $web = 1;
-  }
-  #  5
-  #elsif ($arg =~ m{\A -war $}xms) {
-  elsif $arg ~~ /^ '-war'/ {
-    zero_modes();
-    $war = 1;
-  }
-  #  6
-  #elsif ($arg =~ m{\A -lo}xms) {
-  elsif $arg ~~ /^ '-lo'/ {
-    zero_modes();
-    $logo = 1;
-  }
-  #  7/23
-  #elsif ($arg =~ m{\A -sq}xms) {
-  elsif $arg ~~ /^ '-sq'/ {
-    zero_modes();
-    die "Undefined arg value for arg '$arg'" if !defined $val;
-    #if ($val !~ /[0-9]+/) {
-    if $val !~~ /[0..9]+/ {
-      die "Sqdn = '$val' is not an integer in the inclusive range $cslo-$cshi\n";
+        if $arg ~~ /sqdnP/ {
+            $sqdnP = $val;
+        }
+        else {
+            $G::sqdn = $val;
+        }
     }
-    if ($val < $cslo || $val > $cshi) {
-      die "Sqdn = '$val' is not an integer in the inclusive range $cslo-$cshi\n";
+    #  7
+    elsif $arg ~~ /^ '-ao'/ {
+        zero-modes;
+        $aog = 1;
     }
-
-    #if ($arg =~ /sqdnP/) {
-    if $arg ~~ /sqdnP/ {
-      $sqdnP = $val;
+    #  8
+    elsif $arg ~~ /^ '-map'/ {
+        zero-modes;
+        $map = 1;
     }
-    else {
-      $G::sqdn = $val;
+    #  9
+    elsif $arg ~~ /^ '-geo'/ {
+        zero-modes;
+        $geo = 1;
     }
-  }
-  #  8
-  #elsif ($arg =~ m{\A -ao}xms) {
-  elsif $arg ~~ /^ '-ao'/ {
-    zero_modes();
-    $aog = 1;
-  }
-  #  9
-  #elsif ($arg =~ m{\A -map}xms) {
-  elsif $arg ~~ /^ '-map'/ {
-    zero_modes();
-    $map = 1;
-  }
-  # 10
-  #elsif ($arg =~ m{\A -geo}xms) {
-  elsif $arg ~~ /^ '-geo'/ {
-    zero_modes();
-    $geo = 1;
-  }
-  # 11
-  #elsif ($arg =~ m{\A -rew}xms) {
-  elsif $arg ~~ /^ '-rew'/ {
-    zero_modes();
-    $rewrite = 1;
-  }
-  # 12
-  #elsif ($arg =~ m{\A -tw}xms) {
-  elsif $arg ~~ /^ '-tw'/ {
-    zero_modes();
-    $tweet = 1;
-  }
-  # 13
-  #elsif ($arg =~ m{\A -pr}xms) {
-  elsif $arg ~~ /^ '-pr'/ {
-    zero_modes();
-
-    # tmp setting
-    $preps = '3,7,8,11,16';
-    next;
-
-    die "ERROR:  Option '-preps=' needs one or more squadron numbers.\n"
-      if !defined $val;
-    $preps = $val;
-  }
-  # 14
-  #elsif ($arg =~ m{\A -gc}xms
-  #	 || $arg =~ m{\A -du}xms) {
-  elsif $arg ~~ /^ ['-gc'|'-du']/ {
-    zero_modes();
-    get_toms_google_contacts();
-  }
-  # 15/24
-  #elsif ($arg =~ m{\A -ad}xms) {
-  elsif $arg ~~ /^ '-ad'/ {
-    # seldom used
-    zero_modes();
-    #if ($arg =~ /addr/) {
-    if $arg ~~ /addr/ {
-      $address = $val;
+    # 10
+    elsif $arg ~~ /^ '-rew'/ {
+        zero-modes;
+        $rewrite = 1;
     }
-    else {
-      add_new_CL_data();
+    # 11
+    elsif $arg ~~ /^ '-tw'/ {
+        zero-modes;
+        $tweet = 1;
     }
-  }
-  # 16
-  #elsif ($arg =~ m{\A -mail}xms) {
-  elsif $arg ~~ /^ '-mail'/ {
-    # seldom used
-    zero_modes();
-    $mail     = 1;
-    $mail_typ = $val;
-  }
-  # 17
-  =begin comment
-  # obsolete!!
-  #elsif ($arg =~ m{\A -csv}xms) {
-  elsif $arg ~~ /^ '-csv'/ {
-    die "ERROR: '-csv=X' needs '=cs' or '=admin'"
-      if (!defined $val || ($val ne 'cs' && $val ne 'admin'));
-    zero_modes();
-    write_csv_file({ type => $val});
-  }
-  =end comment
-  # 18
-  #elsif ($arg =~ m{\A -me}xms) {
-  elsif $arg ~~ /^ '-me'/ {
-    zero_modes();
-    write_memorial_rolls({
-			  delete         => 0,
-			  force          => $G::force,
-			  CL_has_changed => 1,
-			 });
-  }
-  # 19
-  #elsif ($arg =~ m{\A -u65}xms) {
-  elsif $arg ~~ /^ '-u65'/ {
-    zero_modes();
-    $u65 = $val;
-    #read_u65_cs_excel_data($val);
-  }
-  # 20
-  =begin comment
-  # obsolete!!
-  #elsif ($arg =~ m{\A -raz}xms) {
-  elsif $arg ~~ /^ '-raz'/ {
-    zero_modes();
-    $raz = 1;
-  }
-  =end comment
-  # 21
-  #elsif ($arg =~ m{\A -res}xms) {
-  elsif $arg ~~ /^ '-res'/ {
-    zero_modes();
-    $restrict = 1;
-  }
-  # 22
-  #elsif ($arg =~ m{\A -nop}xms) {
-  elsif $arg ~~ /^ '-nop'/ {
-    zero_modes();
-    $nopics = 1;
-  }
-  # 23 (see 7)
-  # 24 (see 15)
-  # other options ===============
+    # 12
+    elsif $arg ~~ /^ '-pr'/ {
+        zero-modes;
 
-=begin comment
+        # tmp setting
+        $preps = '3,7,8,11,16';
+        next;
 
-  #elsif ($arg =~ m{\A -frep}xms) {
-  elsif $arg ~~ /^ '-frep'/ {
-    die "FATAL: The '-frep' option has been turned off.\n";
+        die "ERROR:  Option '-preps=' needs one or more squadron numbers.\n"
+            if !defined $val;
+        $preps = $val;
+    }
+    # 13
+    elsif $arg ~~ /^ ['-gc'|'-du']/ {
+        zero-modes;
+        get_toms_google_contacts();
+    }
+    # 14/21
+    elsif $arg ~~ /^ '-ad'/ {
+        # seldom used
+        zero-modes;
+        #if ($arg =~ /addr/) {
+        if $arg ~~ /addr/ {
+            $address = $val;
+        }
+        else {
+            add_new_CL_data();
+        }
+    }
+    # 15
+    elsif $arg ~~ /^ '-mail'/ {
+        # seldom used
+        zero-modes;
+        $mail     = 1;
+        $mail_typ = $val;
+    }
+    # 16
+    elsif $arg ~~ /^ '-me'/ {
+        zero-modes;
+        write_memorial_rolls({
+            delete         => 0,
+            force          => $G::force,
+            CL_has_changed => 1,
+        });
+    }
+    # 17
+    elsif $arg ~~ /^ '-u65'/ {
+        zero-modes;
+        $u65 = $val;
+    }
+    # 18
+    elsif $arg ~~ /^ '-res'/ {
+        zero-modes;
+        $restrict = 1;
+    }
+    # 19
+    elsif $arg ~~ /^ '-nop'/ {
+        zero-modes;
+        $nopics = 1;
+    }
+    # 20 (see 6)
+    # 21 (see 14)
 
-    my $date = $val;
-    die "ERROR:  Date must be in 'YYYYMMDD' format but it's empty.\n"
-      if !defined $date;
+    # other options
 
     =begin comment
-    if ($date !~ m{\A 201 [4-5]{1}      # YYYY (year: 2014 | 2015)
-                      [0-1]{1} [0-9]{1} # MM (month: 1-12)
-                      [0-3]{1} [0-9]{1} # DD (day: 1=31)
-                      \z
-		  }xms) {
-    =end comment
-    if $date !~~ /^ 201 [4|5]..2    # YYYY (year: 2014 | 2015)
-                      [0|1] [0..9]  # MM (month: 1-12)
-                      [0..3] [0..9] # DD (day: 1=31)
-                 /
-		{
+    elsif $arg ~~ /^ '-frep'/ {
+        die "FATAL: The '-frep' option has been turned off.\n";
 
-        die "ERROR:  date must be in 'YYYYMMDD' format but it's '$date'";
+        my $date = $val;
+        die "ERROR:  Date must be in 'YYYYMMDD' format but it's empty.\n"
+        if !defined $date;
+
+        if $date !~~ /^ 201 [4|5]..2 # YYYY (year: 2014 | 2015)
+                      [0|1] [0..9]   # MM (month: 1-12)
+                     [0..3] [0..9]   # DD (day: 1=31)
+                     / {
+            die "ERROR:  date must be in 'YYYYMMDD' format but it's '$date'";
+        }
+        my $yr = substr $date, 0, 4;
+        my $mo = substr $date, 4, 2;
+        my $da = substr $date, 6, 2;
+        $GREP_update_asof     = "$date";
+        $GREP_update_asof_iso = "$yr-$mo-$da";
+        $frep = 1;
     }
-    my $yr = substr $date, 0, 4;
-    my $mo = substr $date, 4, 2;
-    my $da = substr $date, 6, 2;
-    $GREP_update_asof     = "$date";
-    $GREP_update_asof_iso = "$yr-$mo-$da";
-    $frep = 1;
-  }
+    =end comment
 
-=end comment
-
-  #elsif ($arg =~ m{\A -rea}xms) {
-  elsif $arg ~~ /^ '-rea'/ {
-    $G::real_xls = 1;
-  }
-  #elsif ($arg =~ m{\A -so}xms) {
-  elsif $arg ~~ /^ '-so'/ {
-    # sort keys, exit from there
-    #sort_show_keys(\%G::cmate);
-    sort_show_keys(%G::cmate);
-  }
-  #elsif ($arg =~ m{\A -rp}xms) {
-  elsif $arg ~~ /^ '-rp'/ {
-    # raw picture stats, exit from there
-    #show_raw_picture_stats(\%G::cmate);
-    show_raw_picture_stats(%G::cmate);
-  }
-  #elsif ($arg =~ m{\A -tu}xms) {
-  elsif $arg ~~ /^ '-tu'/ {
-    # list nobct1961s, exit from there
-    #show_nobct1961s(\%G::cmate);
-    show_nobct1961s(%G::cmate);
-  }
-  #elsif ($arg =~ m{\A -deb}xms) {
-  elsif $arg ~~ /^ '-deb'/ {
-    $debug = 1;
-    $G::warn  = 1;
-  }
-  #elsif ($arg =~ m{\A -dec}xms) {
-  elsif $arg ~~ /^ '-dec'/ {
-    $redo_deceased = 1;
-  }
-  #elsif ($arg =~ m{\A -o}xms) {
-  elsif $arg ~~ /^ '-o'/ {
-    $one = 1;
-  }
-  #elsif ($arg =~ m{\A -n}xms) {
-  elsif $arg ~~ /^ '-n'/ {
-    $G::warn = 0;
-  }
-  #elsif ($arg =~ m{\A -warn}xms) {
-  elsif $arg ~~ /^ '-warn'/ {
-    $G::warn = 1;
-  }
-  #elsif ($arg =~ m{\A -ps}xms) {
-  elsif $arg ~~ /^ '-ps'/ {
-    # picture stats
-    $G::pstats = 1;
-    zero_modes();
-    $gen   = 1;
-  }
-  #elsif ($arg =~ m{\A -fi}xms) {
-  elsif $arg ~~ /^ '-fi'/ {
-    $draft = 0;
-    $G::warn  = 1;
-  }
-  #elsif ($arg =~ m{\A -f [\w\W]* x }xms) {
-  elsif $arg ~~ /^ '-f' \N* x / {
-    $G::force_xls = 1;
-  }
-  #elsif ($arg =~ m{\A -fo}xms) {
-  elsif $arg ~~ /^ '-fo'/ {
-    $G::force = 1;
-  }
-  #elsif ($arg =~ m{\A -r(es)?=(3|6|12)}xms) {
-  elsif $arg ~~ /^ '-r' [es]? '=' (3|6|12) / {
-    #$G::ires = $2 * 100;
-    $G::ires = +$0 * 100;
-  }
-  #elsif ($arg =~ m{\A -t(yp)?=(tif|gif|jpg)}xms) {
-  elsif $arg ~~ /^ '-t' [y|p]? '=' (tif|gif|jpg) / {
-    $$typ = $2;
-    $typ = ~$0;
-  }
-  #elsif ($arg =~ m{\A -us}xms) {
-  elsif $arg ~~ /^ '-us'/ {
-    $G::use_cloud = 1;
-  }
-  #elsif ($arg =~ m{\A -em}xms) {
-  elsif $arg ~~ /^ '-em'/ {
-    $sendmail = 1; # really send the email
-  }
-  #elsif ($arg =~ m{\A -se}xms) {
-  elsif $arg ~~ /^ '-se'/ {
-    $send     = 1; # really send the tweet
-    $sendmail = 0; # really send the email (off until mail is working again)
-  }
-  #elsif ($arg =~ m{\A -su}xms) {
-  elsif $arg ~~ /^ '-su'/ {
-    $submap = 1;
-  }
-  #elsif ($arg =~ m{\A -main}xms) {
-  elsif $arg ~~ /^ '-main'/ {
-    $maint = 1;
-  }
-  else {
-    die "ERROR: Unknown option '$arg'...aborting.\n";
-  }
+    elsif $arg ~~ /^ '-rea'/ {
+        $G::real_xls = 1;
+    }
+    elsif $arg ~~ /^ '-so'/ {
+        # sort keys, exit from there
+        sort_show_keys(%G::cmate);
+    }
+    elsif $arg ~~ /^ '-rp'/ {
+        # raw picture stats, exit from there
+        show_raw_picture_stats(%G::cmate);
+    }
+    elsif $arg ~~ /^ '-tu'/ {
+        # list nobct1961s, exit from there
+        show_nobct1961s(%G::cmate);
+    }
+    elsif $arg ~~ /^ '-deb'/ {
+        $debug = 1;
+        $G::warn  = 1;
+    }
+    elsif $arg ~~ /^ '-dec'/ {
+        $redo_deceased = 1;
+    }
+    elsif $arg ~~ /^ '-o'/ {
+        $one = 1;
+    }
+    elsif $arg ~~ /^ '-n'/ {
+        $G::warn = 0;
+    }
+    elsif $arg ~~ /^ '-warn'/ {
+        $G::warn = 1;
+    }
+    elsif $arg ~~ /^ '-ps'/ {
+        # picture stats
+        $G::pstats = 1;
+        zero-modes;
+        $gen   = 1;
+    }
+    elsif $arg ~~ /^ '-fi'/ {
+        $draft = 0;
+        $G::warn  = 1;
+    }
+    elsif $arg ~~ /^ '-f' \N* x / {
+        $G::force_xls = 1;
+    }
+    elsif $arg ~~ /^ '-fo'/ {
+        $G::force = 1;
+    }
+    elsif $arg ~~ /^ '-r' [es]? '=' (3|6|12) / {
+        $G::ires = +$0 * 100;
+    }
+    elsif $arg ~~ /^ '-t' [y|p]? '=' (tif|gif|jpg) / {
+        $typ = ~$0;
+    }
+    elsif $arg ~~ /^ '-us'/ {
+        $G::use_cloud = 1;
+    }
+    elsif $arg ~~ /^ '-em'/ {
+        $sendmail = 1; # really send the email
+    }
+    elsif $arg ~~ /^ '-se'/ {
+        $send     = 1; # really send the tweet
+        $sendmail = 0; # really send the email (off until mail is working again)
+    }
+    elsif $arg ~~ /^ '-su'/ {
+        $submap = 1;
+    }
+    elsif $arg ~~ /^ '-main'/ {
+        $maint = 1;
+    }
+    else {
+        die "ERROR: Unknown option '$arg'...aborting.\n";
+    }
 }
 
 =begin comment
-
-if (!$frep) {
-  #if (!-f $GREP_update_asof_file) {
-  if (!$GREP_update_asof_file.IO.f) {
-    print "ERROR:  You need to update USAFA Endowment fund raising data\n";
-    die   "        with the '-frep=YYYYMMDD' option.\n";
-  }
-
-  open my $fp, '<', $GREP_update_asof_file
-    or die "$GREP_update_asof_file: $!";
-  my $s = <$fp>;
-  chomp $s;
-  $GREP_update_asof_iso = $s;
-}
-
-=end comment
-
-if (0 && $debug) {
-  die "DEBUG: input res = $G::ires\n";
-}
-
-if ($gen) {
-  #gen_montage();
-  #build_montage(\%CL::mates, $genS);
-  build_montage(%CL::mates, $genS);
-  print "Processed $ncmates pictures.\n";
-}
-elsif ($u65) {
-  read_u65_cs_excel_data($u65);
-}
-=begin comment
-# obsolete
-elsif ($raz) {
-  write_excel_files_for_raz();
+if !$frep {
+    if !$GREP_update_asof_file.IO.f {
+        say "ERROR:  You need to update USAFA Endowment fund raising data";
+        die   "        with the '-frep=YYYYMMDD' option.\n";
+    }
+    my $s = slurp $GREP_update_asof_file;
+    chomp $s;
+    $GREP_update_asof_iso = $s;
 }
 =end comment
-elsif ($restrict) {
-  show_restricted_data_info();
-}
-elsif ($mail) {
-  #write_mailman_list(\%G::cmate, $mail_typ, \@G::ofils);
-  write_mailman_list(%G::cmate, $mail_typ, @G::ofils);
-}
-elsif ($geo) {
-  print "# Building geo request data...\n";
-  #CLASSMATES_FUNCS::print_geo_data($G::USAFA1965, \@G::ofils,
-  #				   \@G::cmates, \%G::cmate,
-  CLASSMATES_FUNCS::print_geo_data($G::USAFA1965, @G::ofils,
-				   @G::cmates, %G::cmate,
-				  );
-  print "Move up to dir '../../../../mydomains' with copy of\n";
-  print "  the output file to continue.\n";
 
+if 0 && $debug {
+    die "DEBUG: input res = $G::ires\n";
 }
-elsif ($map) {
-  print "# Building classmates maps...\n";
-  # Need to build a separate map for each type. Some types have
-  # subtypes (e.g., state => one for each state and country, CS => one
-  # for each CS).
-  my %map = (); # mapref, keyed by map types (and subkeys)
-  #GEO_MAPS_USAFA::get_geocode_submap_keys(\%G::cmate, \%geodata, \%map);
-  GEO_MAPS_USAFA::get_geocode_submap_keys(%G::cmate, %geodata, %map);
 
-  my @use
-    = <
+if $gen {
+    build_montage(%CL::mates, $genS);
+    say "Processed $ncmates pictures.";
+}
+elsif $u65 {
+    read_u65_cs_excel_data($u65);
+}
+elsif $restrict {
+    show_restricted_data_info();
+}
+elsif $mail {
+    write_mailman_list(%G::cmate, $mail_typ, @G::ofils);
+}
+elsif $geo {
+    say "# Building geo request data...";
+    CLASSMATES_FUNCS::print_geo_data($G::USAFA1965, @G::ofils,
+  				   @G::cmates, %G::cmate,
+  				  );
+    say "Move up to dir '../../../../mydomains' with copy of";
+    say "  the output file to continue.";
+}
+elsif $map {
+    say "# Building classmates maps...";
+    # Need to build a separate map for each type. Some types have
+    # subtypes (e.g., state => one for each state and country, CS => one
+    # for each CS).
+    my %map = (); # mapref, keyed by map types (and subkeys)
+    GEO_MAPS_USAFA::get_geocode_submap_keys(%G::cmate, %geodata, %map);
+
+    my %use = set <
 	  all
 	  all_show
 	  debug
@@ -741,11 +583,8 @@ elsif ($map) {
 	  ctry
 	  reps
       >;
-  my %use;
-  %use{@use} = ();
 
-  my %styp
-    = set <
+    my %styp = set <
 	  sqdn
 	  sqdn_show
 	  grp
@@ -754,51 +593,44 @@ elsif ($map) {
 	  state_show
 	  ctry
 	  ctry_show
-       >;
+          >;
 
+    %use<debug>:delete if !$G::debug;
 
-  #delete %use{debug} if !$G::debug;
-  %use<debug>:delete if !$G::debug;
+    my %reps;
+    U65::get_all_reps(%reps);
 
-  my %reps;
-  #U65::get_all_reps(\%reps);
-  U65::get_all_reps(%reps);
+    my @mt = %map.keys;
 
-  my @mt = (keys %map);
+    #say Dumper(@mt); die "debug exit";
 
-  #print Dumper(\@mt); die "debug exit";
+    push @mt, 'debug' if $debug;
 
-  push @mt, 'debug' if ($debug);
+    for @mt -> $mt {
+        next if !(%use{$mt}:exists);
 
-  #foreach my $mt (@mt) {
-  for @mt -> $mt {
-    next if !(%use{$mt}:exists);
+        my $mtyp = $mt;
+        $mtyp = 'all_show' if $mt eq 'debug';
 
-    my $mtyp = $mt;
-    $mtyp = 'all_show' if ($mt eq 'debug');
+        my $mapref = %{$map{$mtyp}};
+        my @mr = ($mapref);
 
-    #my $mapref = \%{$map{$mtyp}};
-    my $mapref = %{$map{$mtyp}};
-    my @mr = ($mapref);
+        # some types have subtypes
+        my @st;
+        if !(%styp{$mt}:exists) {
+            @mr = GEO_MAPS_USAFA::get_submap_refs($mapref, $mt, @st);
+        }
 
-    # some types have subtypes
-    my @st;
-    if !(%styp{$mt}:exists) {
-      #@mr = GEO_MAPS_USAFA::get_submap_refs($mapref, $mt, \@st);
-      @mr = GEO_MAPS_USAFA::get_submap_refs($mapref, $mt, @st);
-    }
-
-    my $n = @mr;
-    #for (my $i = 0; $i < $n; ++$i) {
-    my $i; # loop variable
-    loop ($i = 0; $i < $n; ++$i) {
-      my $mr = @mr[$i];
-      my $st = @st[$i];
-      if ($debug) {
-	print "DEBUG:  \$mr = '$mr'; \$st = '$st'\n";
-      }
-      GEO_MAPS_USAFA::print_map_data({
-				      type      => $G::USAFA1965,
+        my $n = @mr;
+        my $i; # loop variable
+        loop ($i = 0; $i < $n; ++$i) {
+            my $mr = @mr[$i];
+            my $st = @st[$i];
+            if $debug {
+            	say "DEBUG:  \$mr = '$mr'; \$st = '$st'";
+            }
+            GEO_MAPS_USAFA::print_map_data({
+	    			      type      => $G::USAFA1965,
 				      ofilsref  => @G::ofils,
 				      cmateref  => %G::cmate,
 				      map       => $mr,
@@ -808,133 +640,145 @@ elsif ($map) {
 				      debug     => $debug,
 				      repref    => %reps,
 				     });
+        }
     }
-  }
+}
+elsif $preps {
+    write_possible_reps_list(@G::ofils, $preps);
+}
+elsif $collect {
+    say "Collecting pics info for CL module...";
+    collect_pic_info($orig_pics_dir);
+}
+elsif $web {
+    gen_tlspm();
+    say "Building web pages for usafa-1965.org...";
+    Build_web_pages($maint);
+}
+elsif $tweet {
+    say "Sending tweet from latest news...";
+    USAFA_Tweet::send_tweet(@G::ofils, $G::USAFA1965_tweetfile, $send);
 
+    # also send site-news e-mail same as tweet
+    USAFA_SiteNews::send_email(@G::ofils, $G::USAFA1965_tweetfile, $sendmail, $debug);
 }
-elsif ($preps) {
-  write_possible_reps_list(@G::ofils, $preps);
+elsif $sendmail {
+    # send site-news e-mail same as tweet
+    USAFA_SiteNews::send_email(@G::ofils, $G::USAFA1965_tweetfile, $sendmail, $debug);
 }
-=begin comment
-elsif ($cvt) {
-  print "Converting pics to eps...\n";
-  convert_pics();
+elsif $rewrite {
+    say "Rebuilding CL.pm module...";
+    # output to a revised CL module
+    my $ofil = 't.pm';
+    push @G::ofils, $ofil;
+    U65::write_CL_module($ofil, %CL::mates);
 }
-=end comment
-elsif ($collect) {
-  print "Collecting pics info for CL module...\n";
-  collect_pic_info($orig_pics_dir);
+elsif $sqdnP {
+    printf "Finding source picture files for CS-%02d...\n", $sqdnP;
+    find_sqdn_pics($sqdnP);
 }
-elsif ($web) {
-  gen_tlspm();
-  print "Building web pages for usafa-1965.org...\n";
-  Build_web_pages($maint);
+elsif $G::sqdn {
+    printf "Writing an rtf file of contact data for CS-%02d...\n", $G::sqdn;
+    write_rtf_list($G::sqdn, %CL::mates);
 }
-elsif ($tweet) {
-  print "Sending tweet from latest news...\n";
-  USAFA_Tweet::send_tweet(@G::ofils, $G::USAFA1965_tweetfile, $send);
-
-  # also send site-news e-mail same as tweet
-  USAFA_SiteNews::send_email(@G::ofils, $G::USAFA1965_tweetfile, $sendmail, $debug);
+elsif $address {
+    say "Writing an rtf file of contact data for keys in file '$address'...";
+    write_rtf_list(0, %CL::mates, $address);
 }
-elsif ($sendmail) {
-  # send site-news e-mail same as tweet
-  USAFA_SiteNews::send_email(@G::ofils, $G::USAFA1965_tweetfile, $sendmail, $debug);
+elsif $nopics {
+    say "Finding names, sqdns, for 'no-pics'.";
+    find_nopics();
 }
-elsif ($rewrite) {
-  print "Rebuilding CL.pm module...\n";
-  # output to a revised CL module
-  my $ofil = 't.pm';
-  push @G::ofils, $ofil;
-  U65::write_CL_module($ofil, %CL::mates);
+elsif $aog {
+    ManageWebSite::read_aog_data(%CL::mates);
+    # now re-write CL with new data
+    # need file pointer
+    # output to a revised CL module
+    my $ofil = 't.pm';
+    push @G::ofils, $ofil;
+    U65::write_CL_module($ofil, %CL::mates);
 }
-elsif ($sqdnP) {
-  printf "Finding source picture files for CS-%02d...\n", $sqdnP;
-  find_sqdn_pics($sqdnP);
+elsif $war {
+    note "The war memorial option was pretty much a one-shot deal--unless data are updated.";
+    ManageWebSite::make_war_memorials();
 }
-elsif ($G::sqdn) {
-  printf "Writing an rtf file of contact data for CS-%02d...\n", $G::sqdn;
-  write_rtf_list($G::sqdn, %CL::mates);
-}
-elsif ($address) {
-  say "Writing an rtf file of contact data for keys in file '$address'...";
-  write_rtf_list(0, %CL::mates, $address);
-}
-elsif ($nopics) {
-  say "Finding names, sqdns, for 'no-pics'.";
-  find_nopics();
-}
-elsif ($aog) {
-  ManageWebSite::read_aog_data(%CL::mates);
-  # now re-write CL with new data
-  # need file pointer
-  # output to a revised CL module
-  my $ofil = 't.pm';
-  push @G::ofils, $ofil;
-  U65::write_CL_module($ofil, %CL::mates);
-}
-elsif ($war) {
-  warn "The war memorial option was pretty much a one-shot deal--unless data are updated.\n";
-  ManageWebSite::make_war_memorials();
-}
-elsif ($logo) {
-  warn "The CS logo option was pretty much a one-shot deal--unless data are updated.\n";
-  ManageWebSite::make_cs_sqdn_logo_history();
+elsif $logo {
+    note "The CS logo option was pretty much a one-shot deal--unless data are updated.";
+    ManageWebSite::make_cs_sqdn_logo_history();
 }
 else {
-  die "No known mode selected.\n";
+    die "No known mode selected.\n";
 }
 
 #====== NORMAL END ======
-print "Normal end.\n";
-if ($web && @G::ofils) {
-  print "See web output files in 'web-site/pages':\n";
-  my @tfils = ();
-#  foreach my $f (@G::ofils) {
-  for @G::ofils -> $f {
-    #next if $f =~ m{pages/};
-    next if $f ~~ /pages/;
-    push @tfils, $f;
-  }
-  if (@tfils) {
-    my $n = @tfils;
+say "Normal end.";
+if $web && @G::ofils {
+    say "See web output files in 'web-site/pages':";
+    my @tfils = ();
+    for @G::ofils -> $f {
+        next if $f ~~ /pages/;
+        push @tfils, $f;
+    }
+    if @tfils {
+        my $n = @tfils;
+        my $s = $n > 1 ?? 's' !! '';
+        say "See output file$s:";
+        .say for @tfils;
+    }
+}
+elsif !$web && @G::ofils {
+    my $n = @G::ofils;
     my $s = $n > 1 ?? 's' !! '';
     say "See output file$s:";
-    #print "  $_\n" foreach @tfils;
-    .say for @tfils;
-  }
-}
-elsif (!$web && @G::ofils) {
-  my $n = @G::ofils;
-  #my $s = $n > 1 ? 's' : '';
-  my $s = $n > 1 ?? 's' !! '';
-  say "See output file$s:";
-  .say for @G::ofils;
+    .say for @G::ofils;
 }
 else {
-  print "No output files generated.\n";
+    say "No output files generated.";
 }
 
-if ($G::nonewpics) {
-  print "\$nonewpics is on, some dummy pictures used.\n";
+if $G::nonewpics {
+    say "\$nonewpics is on, some dummy pictures used.";
 }
 
 #### subroutines ####
+
+# ensure we don't have mutually exclusive modes
+sub zero-modes {
+    $add      = 0;
+    $address  = 0;
+    $aog      = 0;
+    $collect  = 0;
+    $gcon     = 0;
+    $gen      = 0;
+    $geo      = 0;
+    $logo     = 0;
+    $mail     = 0;
+    $map      = 0;
+    $mem      = 0;
+    $preps    = 0;
+    $restrict = 0;
+    $rewrite  = 0;
+    $G::sqdn  = 0;
+    $sqdnP    = 0;
+    $tweet    = 0;
+    $u65      = 0;
+    $war      = 0;
+    $web      = 0;
+    $nopics   = 0;
+    # 21
+}
 
 =begin comment
 
 # not sure if this is needed
 sub build_templated_cgi_files {
-  warn "not yet ready for function 'build_templated_cgi_files'\n";
+    note "not yet ready for function 'build_templated_cgi_files'";
+    # build the cgi file for downloads and uploads
 
-  # build the cgi file for downloads and uploads
+    # first get the current download file list
+    my $idir = './site-downloads';
 
-  # first get the current download file list
-  my $idir = './site-downloads';
-
-  #my @xlsfils = glob("$idir/*.xls");
-  my @xlsfils = dir $idir, :test("*.xls");
-
+    my @xlsfils = dir $idir, :test("*.xls");
 
 } # build_templated_cgi_files
 
