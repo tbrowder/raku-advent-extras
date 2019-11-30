@@ -57,7 +57,7 @@ my $decfil = './.deceased_hash_storage';
 # the hash ref
 #$G::dechref;
 
-my %geodata = %GEO_DATA_USAFA::geodata;
+my %geodata = %*PERL5<%GEO_DATA_USAFA::geodata>;
 $G::tlspm = './cgi-common/TLSDATA.pm';
 
 # to do: make more general to handle input/output by squadrons (1-24)
