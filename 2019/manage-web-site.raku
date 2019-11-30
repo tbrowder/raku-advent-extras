@@ -41,7 +41,8 @@ use HONOREES:from<Perl5>;     # for 50th Reunion Project
 use PicFuncs:from<Perl5>;     # for picture and montage generation
 use USAFA_Tweet:from<Perl5>;
 use USAFA_SiteNews:from<Perl5>; # for e-mail
-use Geo::Ellipsoid:from<Perl5>;# for GEO info
+use Geo::Ellipsoid:from<Perl5>; # for GEO info
+use ManageWebSite:from<Perl5>;
 #=== end using Perl modules ===========================================
 
 #=== Raku modules ===========================================
