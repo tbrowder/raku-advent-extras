@@ -5,51 +5,22 @@ use lib:from<Perl5> ('.', 'lib');
 
 #=== Perl modules ===========================================
 # public modules available from CPAN
-use Graphics::Magick:from<Perl5>;# now we use GraphicsMagick instead of ImageMagick
-use Email::Valid:from<Perl5>; # for mail
-use Text::CSV:from<Perl5>;
-use Spreadsheet::DataToExcel:from<Perl5>; # proper Excel file extensions are: *.xls, *.xlsx
-use DirHandle:from<Perl5>;
-use Storable:from<Perl5>;
-use DBI:from<Perl5>;
-use Data::Table::Excel:from<Perl5> <xls2tables xlsx2tables>;
-use RTF::Writer:from<Perl5>;
-use WebSiteMenu:from<Perl5>; # for menus
-use WWW::Google::Contacts:from<Perl5>; # cpan
-# local modules
+#-----------------------------------
+# see list in file 'module.used.txt' for those used in other modules
+# and should not be needed in this file
+#-----------------------------------
+# local modules in this dir (.):
 use G:from<Perl5>; # global vars for port to Raku
 use OtherFuncs:from<Perl5>; # for subs moved from this file
-# for Google Email Contacts
-use GMAIL:from<Perl5>; # mine
-use MySECRETS:from<Perl5>;
-# other data and functions
-use GEO_MAPS_USAFA:from<Perl5>;
-use GEO_DATA_USAFA:from<Perl5>; # auto-generated
-use CLASSMATES_FUNCS:from<Perl5> <:all>;
-use CL:from<Perl5>;          # for classmate info
-use U65:from<Perl5>;         # for squadron info
-use AOG:from<Perl5>;         # for AOG csv general data
-use AOG2:from<Perl5>;        # for AOG csv format info
-use Stats:from<Perl5>;       # for collecting stats
-use CSReps:from<Perl5>;      # specific data for reps
-use Grads:from<Perl5>;       # official AOG grad count at graduation by CS
-use USAFA_Stats:from<Perl5>; # the database to keep stats in
-use U65Classmate:from<Perl5>; # for classmate data
-use U65Fields:from<Perl5>;    # need field data
-use MSDate:from<Perl5>;       # need data conversion
-use HONOREES:from<Perl5>;     # for 50th Reunion Project
 use PicFuncs:from<Perl5>;     # for picture and montage generation
-use USAFA_Tweet:from<Perl5>;
-use USAFA_SiteNews:from<Perl5>; # for e-mail
-use Geo::Ellipsoid:from<Perl5>; # for GEO info
+# other data and functions in dir 'lib':
 use ManageWebSite:from<Perl5>;
+use GEO_MAPS_USAFA:from<Perl5>;
 #=== end using Perl modules ===========================================
 
 #=== Raku modules ===========================================
 # public modules (available with the Raku installer 'zef')
-#use Geo::Ellipsoid;# for GEO info
-use File::Copy;
-use Data::Dump; # for debugging
+#use Data::Dump; # for debugging
 #=== end using Raku modules ===========================================
 
 # file for storing a hash
@@ -205,14 +176,16 @@ my $cshi          = 24;
 $G::nonewpics = 0; # don't make new pics for the web if they don't exist
 @G::ofils     = (); # track output files written
 
-for @*ARGS {
+for @*ARGS -> $arg {
 
-    when /^ '-h'/ { long-help }
-    my ($arg, $val);
+    my $val;
     my $idx = index $arg, '=';
     if ($idx >= 0) {
         $val = substr $arg, $idx+1;
         $arg = substr $arg, 0, $idx;
+    }
+    if $arg ~~ /^ '-h'/ {
+        long-help # <= exits from there
     }
 
     # execution modes ==============
