@@ -522,7 +522,7 @@ for @*ARGS -> $arg {
   # 24 (see 15)
   # other options ===============
 
-=pod
+=begin comment
 
   #elsif ($arg =~ m{\A -frep}xms) {
   elsif $arg ~~ /^ '-frep'/ {
@@ -555,7 +555,7 @@ for @*ARGS -> $arg {
     $frep = 1;
   }
 
-=cut
+=end comment
 
   #elsif ($arg =~ m{\A -rea}xms) {
   elsif $arg ~~ /^ '-rea'/ {
@@ -656,7 +656,7 @@ for @*ARGS -> $arg {
   }
 }
 
-=pod
+=begin comment
 
 if (!$frep) {
   #if (!-f $GREP_update_asof_file) {
@@ -672,7 +672,7 @@ if (!$frep) {
   $GREP_update_asof_iso = $s;
 }
 
-=cut
+=end comment
 
 if (0 && $debug) {
   die "DEBUG: input res = $G::ires\n";
@@ -908,7 +908,7 @@ if ($G::nonewpics) {
 
 #### subroutines ####
 
-=pod
+=begin comment
 
 # not sure if this is needed
 sub build_templated_cgi_files {
@@ -925,4 +925,4 @@ sub build_templated_cgi_files {
 
 } # build_templated_cgi_files
 
-=cut
+=end comment
