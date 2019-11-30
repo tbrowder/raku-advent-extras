@@ -1,26 +1,26 @@
 #================================================
 # Public modules (CPAN)
 #================================================
-Data::Dumper
 Carp
-Readonly
-Text::CSV
-Spreadsheet::DataToExcel
+DBI
+Data::Dumper
+Data::Serializer::Raw
+Data::Table::Excel qw(xls2tables xlsx2tables)
+Digest::MD5::File qw(file_md5_hex)
 DirHandle
-File::Glob qw(:globally)
+Email::Valid
 File::Basename
 File::Copy
-Storable
-DBI
-Data::Table::Excel qw(xls2tables xlsx2tables)
-RTF::Writer
-Graphics::Magick
-Email::Valid
+File::Glob qw(:globally)
 Geo::Ellipsoid
+Graphics::Magick
+RTF::Writer
+Readonly
+Spreadsheet::DataToExcel
+Storable
+Text::CSV
 WWW::Google::Contacts
-Data::Serializer::Raw
 integer
-Digest::MD5::File qw(file_md5_hex)
 
 #=========================================================================
 # Private modules
@@ -39,6 +39,7 @@ GEO_MAPS_USAFA
 GMAIL
 Grads
 HONOREES
+ManageWebSite
 MSDate
 MyRTF
 PicFuncs
