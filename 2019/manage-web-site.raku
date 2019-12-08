@@ -176,21 +176,22 @@ my $cshi          = 24;
 $G::nonewpics = 0; # don't make new pics for the web if they don't exist
 @G::ofils     = (); # track output files written
 
-for @*ARGS -> $arg {
+for @*ARGS {
 
+    my $arg = $_;
     my $val;
     my $idx = index $arg, '=';
     if ($idx >= 0) {
         $val = substr $arg, $idx+1;
         $arg = substr $arg, 0, $idx;
     }
-    if $arg ~~ /^ '-h'/ {
+    when /^ '-h'/ {
         long-help # <= exits from there
     }
 
     # execution modes ==============
     #  1
-    if $arg ~~ /^ '-gen'/ {
+    when /^ '-gen'/ {
         zero-modes;
         $gen  = 1;
         $genS = 0;
@@ -203,27 +204,27 @@ for @*ARGS -> $arg {
 
     }
     #  2
-    elsif $arg ~~ /^ '-co'/ {
+    when /^ '-co'/ {
         zero-modes;
         $collect = 1;
     }
     #  3
-    elsif $arg ~~ /^ '-we'/ {
+    when /^ '-we'/ {
         zero-modes;
         $web = 1;
     }
     #  4
-    elsif $arg ~~ /^ '-war'/ {
+    when /^ '-war'/ {
         zero-modes;
         $war = 1;
     }
     #  5
-    elsif $arg ~~ /^ '-lo'/ {
+    when /^ '-lo'/ {
         zero-modes;
         $logo = 1;
     }
     #  6/20
-    elsif $arg ~~ /^ '-sq'/ {
+    when /^ '-sq'/ {
         zero-modes;
         die "Undefined arg value for arg '$arg'" if !defined $val;
         if $val !~~ /[0..9]+/ {
@@ -241,32 +242,32 @@ for @*ARGS -> $arg {
         }
     }
     #  7
-    elsif $arg ~~ /^ '-ao'/ {
+    when /^ '-ao'/ {
         zero-modes;
         $aog = 1;
     }
     #  8
-    elsif $arg ~~ /^ '-map'/ {
+    when /^ '-map'/ {
         zero-modes;
         $map = 1;
     }
     #  9
-    elsif $arg ~~ /^ '-geo'/ {
+    when /^ '-geo'/ {
         zero-modes;
         $geo = 1;
     }
     # 10
-    elsif $arg ~~ /^ '-rew'/ {
+    when /^ '-rew'/ {
         zero-modes;
         $rewrite = 1;
     }
     # 11
-    elsif $arg ~~ /^ '-tw'/ {
+    when /^ '-tw'/ {
         zero-modes;
         $tweet = 1;
     }
     # 12
-    elsif $arg ~~ /^ '-pr'/ {
+    when /^ '-pr'/ {
         zero-modes;
 
         # tmp setting
@@ -278,12 +279,12 @@ for @*ARGS -> $arg {
         $preps = $val;
     }
     # 13
-    elsif $arg ~~ /^ ['-gc'|'-du']/ {
+    when /^ ['-gc'|'-du']/ {
         zero-modes;
         get_toms_google_contacts();
     }
     # 14/21
-    elsif $arg ~~ /^ '-ad'/ {
+    when /^ '-ad'/ {
         # seldom used
         zero-modes;
         #if ($arg =~ /addr/) {
@@ -295,14 +296,14 @@ for @*ARGS -> $arg {
         }
     }
     # 15
-    elsif $arg ~~ /^ '-mail'/ {
+    when /^ '-mail'/ {
         # seldom used
         zero-modes;
         $mail     = 1;
         $mail_typ = $val;
     }
     # 16
-    elsif $arg ~~ /^ '-me'/ {
+    when /^ '-me'/ {
         zero-modes;
         write_memorial_rolls({
             delete         => 0,
@@ -311,17 +312,17 @@ for @*ARGS -> $arg {
         });
     }
     # 17
-    elsif $arg ~~ /^ '-u65'/ {
+    when /^ '-u65'/ {
         zero-modes;
         $u65 = $val;
     }
     # 18
-    elsif $arg ~~ /^ '-res'/ {
+    when /^ '-res'/ {
         zero-modes;
         $restrict = 1;
     }
     # 19
-    elsif $arg ~~ /^ '-nop'/ {
+    when /^ '-nop'/ {
         zero-modes;
         $nopics = 1;
     }
@@ -331,7 +332,7 @@ for @*ARGS -> $arg {
     # other options
 
     =begin comment
-    elsif $arg ~~ /^ '-frep'/ {
+    when /^ '-frep'/ {
         die "FATAL: The '-frep' option has been turned off.\n";
 
         my $date = $val;
@@ -353,76 +354,76 @@ for @*ARGS -> $arg {
     }
     =end comment
 
-    elsif $arg ~~ /^ '-rea'/ {
+    when /^ '-rea'/ {
         $G::real_xls = 1;
     }
-    elsif $arg ~~ /^ '-so'/ {
+    when /^ '-so'/ {
         # sort keys, exit from there
         sort_show_keys(%G::cmate);
     }
-    elsif $arg ~~ /^ '-rp'/ {
+    when /^ '-rp'/ {
         # raw picture stats, exit from there
         show_raw_picture_stats(%G::cmate);
     }
-    elsif $arg ~~ /^ '-tu'/ {
+    when /^ '-tu'/ {
         # list nobct1961s, exit from there
         show_nobct1961s(%G::cmate);
     }
-    elsif $arg ~~ /^ '-deb'/ {
+    when /^ '-deb'/ {
         $debug = 1;
         $G::warn  = 1;
     }
-    elsif $arg ~~ /^ '-dec'/ {
+    when /^ '-dec'/ {
         $redo_deceased = 1;
     }
-    elsif $arg ~~ /^ '-o'/ {
+    when /^ '-o'/ {
         $one = 1;
     }
-    elsif $arg ~~ /^ '-n'/ {
+    when /^ '-n'/ {
         $G::warn = 0;
     }
-    elsif $arg ~~ /^ '-warn'/ {
+    when /^ '-warn'/ {
         $G::warn = 1;
     }
-    elsif $arg ~~ /^ '-ps'/ {
+    when /^ '-ps'/ {
         # picture stats
         $G::pstats = 1;
         zero-modes;
         $gen   = 1;
     }
-    elsif $arg ~~ /^ '-fi'/ {
+    when /^ '-fi'/ {
         $draft = 0;
         $G::warn  = 1;
     }
-    elsif $arg ~~ /^ '-f' \N* x / {
+    when /^ '-f' \N* x / {
         $G::force_xls = 1;
     }
-    elsif $arg ~~ /^ '-fo'/ {
+    when /^ '-fo'/ {
         $G::force = 1;
     }
-    elsif $arg ~~ /^ '-r' [es]? '=' (3|6|12) / {
+    when /^ '-r' [es]? '=' (3|6|12) / {
         $G::ires = +$0 * 100;
     }
-    elsif $arg ~~ /^ '-t' [y|p]? '=' (tif|gif|jpg) / {
+    when /^ '-t' [y|p]? '=' (tif|gif|jpg) / {
         $typ = ~$0;
     }
-    elsif $arg ~~ /^ '-us'/ {
+    when /^ '-us'/ {
         $G::use_cloud = 1;
     }
-    elsif $arg ~~ /^ '-em'/ {
+    when /^ '-em'/ {
         $sendmail = 1; # really send the email
     }
-    elsif $arg ~~ /^ '-se'/ {
+    when /^ '-se'/ {
         $send     = 1; # really send the tweet
         $sendmail = 0; # really send the email (off until mail is working again)
     }
-    elsif $arg ~~ /^ '-su'/ {
+    when /^ '-su'/ {
         $submap = 1;
     }
-    elsif $arg ~~ /^ '-main'/ {
+    when /^ '-main'/ {
         $maint = 1;
     }
-    else {
+    default {
         die "ERROR: Unknown option '$arg'...aborting.\n";
     }
 }
