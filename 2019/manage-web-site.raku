@@ -181,7 +181,7 @@ for @*ARGS {
     my $arg = $_;
     my $val;
     my $idx = index $arg, '=';
-    if ($idx >= 0) {
+    if $idx.defined {
         $val = substr $arg, $idx+1;
         $arg = substr $arg, 0, $idx;
     }
