@@ -189,7 +189,7 @@ for @*ARGS {
         long-help # <= exits from there
     }
 
-    #| skip back to using the topic variable
+    #| skip back to using the possibly changed topic variable
     $_ = $arg;
 
     # execution modes ==============
@@ -198,13 +198,12 @@ for @*ARGS {
         zero-modes;
         $gen  = 1;
         $genS = 0;
-        if (defined $val) {
-            if ($val < $cslo || $val > $cshi) {
+        if defined $val {
+            if $val < $cslo || $val > $cshi {
                 die "Sqdn = '$val' is not an integer in the inclusive range $cslo-$cshi\n";
             }
             $genS = $val
         }
-
     }
     #  2
     when /^ '-co'/ {
@@ -230,10 +229,10 @@ for @*ARGS {
     when /^ '-sq'/ {
         zero-modes;
         die "Undefined arg value for arg '$arg'" if !defined $val;
-        if $val !~~ /[0..9]+/ {
-            die "Sqdn = '$val' is not an integer in the inclusive range $cslo-$cshi\n";
+        if $val !~~ /<[0..9]>+/ {
+            die "Sqdn = '$val' is not an integer\n";
         }
-        if ($val < $cslo || $val > $cshi) {
+        if $val < $cslo || $val > $cshi {
             die "Sqdn = '$val' is not an integer in the inclusive range $cslo-$cshi\n";
         }
 
@@ -290,7 +289,6 @@ for @*ARGS {
     when /^ '-ad'/ {
         # seldom used
         zero-modes;
-        #if ($arg =~ /addr/) {
         if $arg ~~ /addr/ {
             $address = $val;
         }
@@ -448,7 +446,7 @@ if 0 && $debug {
 }
 
 if $gen {
-    build_montage(%CL::mates, $genS);
+    build_montage(%CL::mates, $genS); #=  <= in module ./PicFuncs.pm5
     say "Processed $ncmates pictures.";
 }
 elsif $u65 {
