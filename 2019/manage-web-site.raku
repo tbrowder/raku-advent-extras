@@ -189,6 +189,9 @@ for @*ARGS {
         long-help # <= exits from there
     }
 
+    #| skip back to using the topic variable
+    $_ = $arg;
+
     # execution modes ==============
     #  1
     when /^ '-gen'/ {
