@@ -1,12 +1,4 @@
-package G;
-
-use feature 'say';
-use strict;
-use warnings;
-
-use Perl6::Export::Attrs;
-
-our $VERSION = '1.00';
+unit module G;
 
 # export all funcs
 
@@ -50,6 +42,3 @@ our $GREP_noteI;
 our $GREP_noteK;
 our $sqdn;
 our $tlspm;
-
-# all modules must return a true value
-1;
