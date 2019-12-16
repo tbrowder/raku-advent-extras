@@ -3,7 +3,7 @@ unit module PicFuncs;
 use lib '.';
 use G;
 
-sub collect_pic_info :Export(:DEFAULT) {
+sub collect_pic_info is export {
     my $dir  = shift @_;
     my $fref = shift @_;
 
@@ -195,7 +195,7 @@ HERE2
 } #  collect_pic_info
 
 
-sub insert_logo :Export(:DEFAULT) {
+sub insert_logo is export {
   my $fp    = shift @_;
   my $fname = shift @_;
   my $indpi = shift @_;
@@ -267,7 +267,7 @@ sub insert_logo :Export(:DEFAULT) {
 
 } # insert_logo
 
-sub insert_pictures :Export(:DEFAULT) {
+sub insert_pictures is export {
   my $fp    = shift @_;
   my $nref  = shift @_; # ref to key array for this CS
   my $oref  = shift @_; # ref to %origmates and eps pic lines
@@ -423,7 +423,7 @@ sub insert_pictures :Export(:DEFAULT) {
   }
 } # insert_pictures
 
-sub convert_single_pic_to_eps :Export(:DEFAULT) {
+sub convert_single_pic_to_eps is export {
   # select pic by file name and desired resolution
   my $ifname  = shift @_; # source
   my $epsname = shift @_; # output
@@ -440,7 +440,7 @@ sub convert_single_pic_to_eps :Export(:DEFAULT) {
 
 }  # convert_single_pic_to_eps
 
-sub get_pic_typ :Export(:DEFAULT) {
+sub get_pic_typ is export {
   # gets bitmap extension from directory or file name
   my $d = shift @_;
   if ($d =~ m{tif}i) {
@@ -455,7 +455,7 @@ sub get_pic_typ :Export(:DEFAULT) {
   die "Unknown picture type directory '$d'!";
 } # get_pic_typ
 
-sub get_pic_dpi :Export(:DEFAULT) {
+sub get_pic_dpi is export {
   # gets bitmap density (dpi) from directory or file name
   my $n = shift @_;
   if ($n =~ m{1200}) {
@@ -470,7 +470,7 @@ sub get_pic_dpi :Export(:DEFAULT) {
   die "Unknown picture density (dpi) directory or file '$n'!";
 } # get_pic_dpi
 
-sub processdir :Export(:DEFAULT) {
+sub processdir is export {
   # see Perl Cookbook, recipe 9.5
 
   # This recursive function determines if there are any eligible
@@ -558,7 +558,7 @@ sub processdir :Export(:DEFAULT) {
 
 } # processdir
 
-sub decode_name :Export(:DEFAULT) {
+sub decode_name is export {
   my $f = shift @_;
   # decode name from file name
   # format last-iii-suf~num
@@ -667,7 +667,7 @@ sub decode_name :Export(:DEFAULT) {
 
 } #  decode_name
 
-sub build_montage :Export(:DEFAULT) {
+sub build_montage is export {
   # for each CS, build a
   # PostScript picture for conversion to pdf; use the original tifs
   # See 'gen_montage' for original specific procedures.
@@ -941,7 +941,7 @@ sub build_montage :Export(:DEFAULT) {
 
 } # build_montage
 
-sub produce_web_jpg_from_tif :Export(:DEFAULT) {
+sub produce_web_jpg_from_tif is export {
   my $tif      = shift @_;
   my $jpgname  = shift @_;
   my $deceased = shift @_;
@@ -1006,7 +1006,7 @@ sub produce_web_jpg_from_tif :Export(:DEFAULT) {
 } # produce_web_jpg_from_tif
 
 
-sub find_sqdn_pics :Export(:DEFAULT) {
+sub find_sqdn_pics is export {
   my $sqdn = shift @_;
   my %f = ();
 
@@ -1046,7 +1046,7 @@ sub find_sqdn_pics :Export(:DEFAULT) {
 
 } # find_sqdn_pics
 
-sub find_nopics :Export(:DEFAULT) {
+sub find_nopics is export {
   my %f = ();
 
   my $i = 0;
@@ -1072,7 +1072,7 @@ sub find_nopics :Export(:DEFAULT) {
 
 } # find_nopics
 
-sub sort_show_keys :Export(:DEFAULT) {
+sub sort_show_keys is export {
   my $href = shift @_;
   my @f = (sort keys %{$href}); # CL::mates);
   my $n = @f;
@@ -1088,7 +1088,7 @@ sub sort_show_keys :Export(:DEFAULT) {
 
 } # sort_show_keys
 
-sub show_raw_picture_stats :Export(:DEFAULT) {
+sub show_raw_picture_stats is export {
   my $href = shift @_;
   my @f = (sort keys %{$href}); # CL::mates);
   my $n = @f;
@@ -1162,7 +1162,7 @@ sub show_raw_picture_stats :Export(:DEFAULT) {
 
 } # show_raw_picture_stats
 
-sub show_nobct1961s :Export(:DEFAULT) {
+sub show_nobct1961s is export {
   my $href = shift @_;
   my @f = (sort keys %{$href}); # CL::mates);
 
@@ -1175,7 +1175,7 @@ sub show_nobct1961s :Export(:DEFAULT) {
 
 } # show_nobct1961s
 
-sub assemble_name :Export(:DEFAULT) {
+sub assemble_name is export {
   my $href = shift @_; # ref to classmates hash
   my $n    = shift @_; # name key
   my $aref = shift @_; # rest of args in a hash
