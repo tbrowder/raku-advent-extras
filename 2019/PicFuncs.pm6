@@ -33,16 +33,22 @@ sub build_montage(%mates, $cs) is export {
     my $norigmates = 0;
 
     # open the templates and read all lines
+    =begin comment
     open my $fpt, '<', $G::template1a # the default template
         or die "Unable to open file '$G::template1a': $!\n";
     my @tlines1a = <$fpt>;
     close $fpt;
+    =end comment
+    my @tlines1a = "$G::template1a".lines;
     my $ntlines1a = @tlines1a;
 
+    =begin comment
     open $fpt, '<', $G::template1b # the legal-size template
         or die "Unable to open file '$G::template1b': $!\n";
     my @tlines1b = <$fpt>;
     close $fpt;
+    =end comment
+    my @tlines1b = "$G::template1b".lines;
     my $ntlines1b = @tlines1b;
 
     #foreach my $cs (@cs) {
@@ -96,8 +102,11 @@ sub build_montage(%mates, $cs) is export {
         }
 
         say "Creating PS file $psfil from scratch";
+        =begin comment
         open my $fpo, '>', $psfil
            or die "Unable to open file '$psfil': $!\n";
+        =end comment
+        my $fpo = open $psfil, :w;
 
         # get logo
         my $npix = 125; # or 150
@@ -238,31 +247,33 @@ sub build_montage(%mates, $cs) is export {
         loop ($i = 0; $i < $ntlines; ++$i) {
             my $t = @tlines[$i];
             # output lines until we get to where the pictures are desired
-            print $fpo $t;
-            if ($t =~ m{insert-header}xms) {
-	       print $fpo "0 -28 moveto (Class of 1965\320Cadet Squadron $cs) 10 puttext\n";
+            $fpo.print: $t;
+            #if ($t =~ m{insert-header}xms) {
+            if $t ~~ /'insert-header'/ {
+	       $fpo.print: "0 -28 moveto (Class of 1965\320Cadet Squadron $cs) 10 puttext\n";
             }
-            elsif ($t =~ m{start-pictures}xms) {
+            elsif $t ~~ /'start-pictures'/ {
 	        # draft overlay
 	        if ($G::draft) {
-	            print $fpo "\n";
-	            print $fpo "%% a DRAFT overlay\n";
-	            print $fpo "gsave\n";
+	            $fpo.print: "\n";
+	            $fpo.print: "%% a DRAFT overlay\n";
+	            $fpo.print: "gsave\n";
 	            #print $fpo "5.5 i2p 4.25 i2p translate 25 rot\n";
-	            print $fpo "5.5 i2p 7.25 i2p translate\n";
-	            print $fpo "0.85 setgray\n";
-	            print $fpo "/Times-Bold 120 selectfont\n";
-	            print $fpo "0 0 moveto (D R A F T) 0 puttext\n";
-	            print $fpo "grestore\n";
-	            print $fpo "\n";
+	            $fpo.print: "5.5 i2p 7.25 i2p translate\n";
+	            $fpo.print: "0.85 setgray\n";
+	            $fpo.print: "/Times-Bold 120 selectfont\n";
+	            $fpo.print: "0 0 moveto (D R A F T) 0 puttext\n";
+	            $fpo.print: "grestore\n";
+	            $fpo.print: "\n";
 	        }
 
 	        # font for names
-	        print $fpo "gsave\n";
-	        print $fpo "/Times 10 selectfont\n";
+	        $fpo.print: "gsave\n";
+	        $fpo.print: "/Times 10 selectfont\n";
+	        #insert_pictures($fpo, \@n, \%origmate, $mref, $legal);
 	        insert_pictures($fpo, \@n, \%origmate, $mref, $legal);
-	        print $fpo "grestore\n";
-	        print $fpo "%% end-pictures\n";
+	        $fpo.print: "grestore\n";
+	        $fpo.print: "%% end-pictures\n";
 
 	        # class of 1965 logo
 	        my $class_logo = "$G::imdir/65_Class_Logo_2.eps";
@@ -331,10 +342,6 @@ sub collect_pic_info is export {
             }
         }
     }
-
-} # <= temp ending of this sub
-
-=finish
 
     # a reusable file pointer
     my $fp;
