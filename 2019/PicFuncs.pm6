@@ -275,6 +275,8 @@ sub build_montage is export {
 
 } # build_montage
 
+=finish
+
 sub collect_pic_info is export {
     my $dir  = shift @_;
     my $fref = shift @_;
