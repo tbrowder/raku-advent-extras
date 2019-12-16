@@ -108,7 +108,8 @@ sub build_montage is export {
         my $logo_eps  = "$epicdir/$logo_base.eps";
         if (!-f $logo_eps) {
             printf "Generating EPS logo for CS-%02d...\n", $cs;
-            qx(gm convert $logo_png $logo_eps);
+            #qx(gm convert $logo_png $logo_eps);
+            shell "gm convert $logo_png $logo_eps";
         }
 
         # need to collect some stats
@@ -127,7 +128,8 @@ sub build_montage is export {
         #foreach my $c (@n) {
         for @n -> $c {
             # get the eps file
-            my $epsname = "${c}.eps";
+            #my $epsname = "${c}.eps";
+            my $epsname = "{$c}.eps";
             my $f = "$epicdir/$epsname";
             if (! -f $f) {
 	        print "WARNING: Eps file '$f' not found...regenerating.\n"
