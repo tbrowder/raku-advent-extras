@@ -102,7 +102,8 @@ sub build_montage is export {
 
         # get logo
         my $npix = 125; # or 150
-        my $logo_base = "cs-${cs}-${npix}h";
+        #my $logo_base = "cs-${cs}-${npix}h";
+        my $logo_base = "cs-{$cs}-{$npix}h";
         my $logo_png  = "./web-site/images/$logo_base.png";
         my $logo_eps  = "$epicdir/$logo_base.eps";
         if (!-f $logo_eps) {
