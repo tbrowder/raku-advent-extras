@@ -4,12 +4,11 @@ unit module PicFuncs;
 
 use G;
 
-sub build_montage is export {
+sub build_montage(%mates, $cs) is export {
     # for each CS, build a
     # PostScript picture for conversion to pdf; use the original tifs
     # See 'gen_montage' for original specific procedures.
-    my $mref  = shift @_; # \%CL::mates
-    my $cs    = shift @_;
+    # my $mref  = shift @_; # \%CL::mates
 
     # some local vars
     # where to find input eps pics
