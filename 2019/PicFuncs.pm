@@ -154,7 +154,7 @@ sub collect_pic_info :Export(:DEFAULT) {
 # whether the person is deceased (with an ISO date if known).  See the example
 # lines for Joe Henderson and John Ardapple.
 #
-# Example lines after editing (actual lines willl not include data form and following
+# Example lines after editing (actual lines will not include data from and following
 #   the first hash mark):
 #
 #   aarni-jc     sq=10                    # name is different in 1963 Polaris: Aarni, J. W.
