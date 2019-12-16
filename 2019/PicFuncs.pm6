@@ -250,7 +250,7 @@ sub build_montage(%mates, $cs) is export {
             $fpo.print: $t;
             #if ($t =~ m{insert-header}xms) {
             if $t ~~ /'insert-header'/ {
-	       $fpo.print: "0 -28 moveto (Class of 1965\320Cadet Squadron $cs) 10 puttext\n";
+	       $fpo.print: "0 -28 moveto (Class of 1965\\320Cadet Squadron $cs) 10 puttext\n";
             }
             elsif $t ~~ /'start-pictures'/ {
 	        # draft overlay
