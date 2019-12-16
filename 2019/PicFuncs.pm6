@@ -20,7 +20,7 @@ sub build_montage(%mates, $cs) is export {
     print "Collecting names by CS...\n";
     my %sqdn = ();
     #U65::get_keys_by_sqdn(\%sqdn, $mref);
-    U65::get_keys_by_sqdn(%sqdn, $mref);
+    U65::get_keys_by_sqdn(%sqdn, %mates);
 
     my @cs = (1..24);
     if ($cs) {
