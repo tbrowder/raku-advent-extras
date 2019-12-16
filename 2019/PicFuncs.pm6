@@ -224,7 +224,8 @@ sub build_montage(%mates, $cs) is export {
         print  "Shortest picture:  $min_h_n\n";
 
         if ($G::pstats) {
-            my $s = $norigmates == 1 ? '' : 's';
+            #my $s = $norigmates == 1 ? '' : 's';
+            my $s = $norigmates == 1 ?? '' !! 's';
             print "Found $norigmates picture$s.\n";
             print "Ending early after showing stats.\n";
             exit;
