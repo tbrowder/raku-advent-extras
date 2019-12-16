@@ -60,7 +60,7 @@ sub build_montage(%mates, $cs) is export {
         # names
         #my @n = @{$sqdn{$cs}};
         my @n = @(%sqdn{$cs});
-        my $n = scalar @n;
+        my $n = @n.elems;
 
         my @tlines;
         my $ntlines;
@@ -86,12 +86,14 @@ sub build_montage(%mates, $cs) is export {
             $pdfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961.pdf", $cs;
         }
 
-        if (-f $pdfil && !$G::force) {
+        #if (-f $pdfil && !$G::force) {
+        if $pdfil.IO.f && !$G::force {
             say "File $pdfil exists...keeping it.";
             push @G::ofils, $pdfil;
             next;
         }
-        elsif (-f $psfil && !$G::force) {
+        #elsif (-f $psfil && !$G::force) {
+        elsif $psfil.IO.f && !$G::force {
             say "File $psfil exists...using it for pdf.";
             printf "Creating pdf montage for CS-%02d...\n", $cs;
             #qx(ps2pdf $psfil $pdfil);
@@ -114,7 +116,8 @@ sub build_montage(%mates, $cs) is export {
         my $logo_base = "cs-{$cs}-{$npix}h";
         my $logo_png  = "./web-site/images/$logo_base.png";
         my $logo_eps  = "$epicdir/$logo_base.eps";
-        if (!-f $logo_eps) {
+        #if (!-f $logo_eps) {
+        if !$logo_eps.IO.f {
             printf "Generating EPS logo for CS-%02d...\n", $cs;
             #qx(gm convert $logo_png $logo_eps);
             shell "gm convert $logo_png $logo_eps";
@@ -139,13 +142,15 @@ sub build_montage(%mates, $cs) is export {
             #my $epsname = "${c}.eps";
             my $epsname = "{$c}.eps";
             my $f = "$epicdir/$epsname";
-            if (! -f $f) {
+            #if (! -f $f) {
+            if !$f.IO.f {
 	        print "WARNING: Eps file '$f' not found...regenerating.\n"
 	            if $G::warn;
 	        #my $fname = $mref->{$c}{file};
 	        my $fname = %mates{$c}<file>;
 	        my $f2 = $fname;
-	        if (! -f $f2) {
+	        #if (! -f $f2) {
+	        if !$f2.IO.f {
 	            print "  WARNING: Source file '$f2' not found...skipping.\n"
 	            if $G::warn;
 	            next;
@@ -294,7 +299,8 @@ sub build_montage(%mates, $cs) is export {
         }
 
         printf "Creating pdf montage for CS-%02d...\n", $cs;
-        qx(ps2pdf $psfil $pdfil);
+        #qx(ps2pdf $psfil $pdfil);
+        shell "ps2pdf $psfil $pdfil";
         push @G::ofils, $pdfil;
         #unlink $psfil;
 
