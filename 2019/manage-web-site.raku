@@ -1,5 +1,10 @@
 #!/usr/bin/env perl6
 
+# for local Raku modules
+use lib '.';
+use G; # global vars for port to Raku
+use PicFuncs;     # for picture and montage generation
+
 # for local Perl modules
 use lib:from<Perl5> ('.', 'lib');
 
@@ -10,9 +15,7 @@ use lib:from<Perl5> ('.', 'lib');
 # and should not be needed in this file
 #-----------------------------------
 # local modules in this dir (.):
-use G; # global vars for port to Raku
 use OtherFuncs:from<Perl5>; # for subs moved from this file
-use PicFuncs;     # for picture and montage generation
 # other data and functions in dir 'lib':
 use ManageWebSite:from<Perl5>;
 use GEO_MAPS_USAFA:from<Perl5>;
