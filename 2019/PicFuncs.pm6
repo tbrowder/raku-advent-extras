@@ -3,6 +3,278 @@ unit module PicFuncs;
 use lib '.';
 use G;
 
+sub build_montage is export {
+    # for each CS, build a
+    # PostScript picture for conversion to pdf; use the original tifs
+    # See 'gen_montage' for original specific procedures.
+    my $mref  = shift @_; # \%CL::mates
+    my $cs    = shift @_;
+
+    # some local vars
+    # where to find input eps pics
+    my $epicdir = './pics-eps';
+    # where to find output montage files (shared with other files!)
+    my $moutdir = './site-public-downloads';
+
+    # collect the names by sqdn
+    print "Collecting names by CS...\n";
+    my %sqdn = ();
+    U65::get_keys_by_sqdn(\%sqdn, $mref);
+
+    my @cs = (1..24);
+    if ($cs) {
+        @cs = ();
+        push @cs, $cs;
+    }
+
+    # avoid duplication, collect eps lines
+    my %origmate = ();
+    my $norigmates = 0;
+
+    # open the templates and read all lines
+    open my $fpt, '<', $G::template1a # the default template
+        or die "Unable to open file '$G::template1a': $!\n";
+    my @tlines1a = <$fpt>;
+    close $fpt;
+    my $ntlines1a = @tlines1a;
+
+    open $fpt, '<', $G::template1b # the legal-size template
+        or die "Unable to open file '$G::template1b': $!\n";
+    my @tlines1b = <$fpt>;
+    close $fpt;
+    my $ntlines1b = @tlines1b;
+
+    foreach my $cs (@cs) {
+        printf "Building montage for CS-%02d...\n", $cs;
+
+        # get the pic count BEFORE naming the file
+
+        # names
+        my @n = @{$sqdn{$cs}};
+        my $n = scalar @n;
+
+        my @tlines;
+        my $ntlines;
+        my $legal;
+        if ($n > 32) {
+            @tlines  = @tlines1b;
+            $ntlines = $ntlines1b;
+            $legal   = 1;
+        }
+        else {
+            @tlines  = @tlines1a;
+            $ntlines = $ntlines1a;
+            $legal   = 0;
+        }
+
+        my ($psfil, $pdfil);
+        if ($legal) {
+            $psfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961-legal.ps", $cs;
+            $pdfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961-legal.pdf", $cs;
+        }
+        else {
+            $psfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961.ps", $cs;
+            $pdfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961.pdf", $cs;
+        }
+
+        if (-f $pdfil && !$G::force) {
+            say "File $pdfil exists...keeping it.";
+            push @G::ofils, $pdfil;
+            next;
+        }
+        elsif (-f $psfil && !$G::force) {
+            say "File $psfil exists...using it for pdf.";
+            printf "Creating pdf montage for CS-%02d...\n", $cs;
+            qx(ps2pdf $psfil $pdfil);
+            push @G::ofils, $pdfil;
+            unlink $psfil if !$G::debug;
+            next;
+        }
+
+        say "Creating PS file $psfil from scratch";
+        open my $fpo, '>', $psfil
+           or die "Unable to open file '$psfil': $!\n";
+
+        # get logo
+        my $npix = 125; # or 150
+        my $logo_base = "cs-${cs}-${npix}h";
+        my $logo_png  = "./web-site/images/$logo_base.png";
+        my $logo_eps  = "$epicdir/$logo_base.eps";
+        if (!-f $logo_eps) {
+            printf "Generating EPS logo for CS-%02d...\n", $cs;
+            qx(gm convert $logo_png $logo_eps);
+        }
+
+        # need to collect some stats
+        my $max_w = 0;
+        my $max_h = 0;
+
+        my $min_w = 999999;
+        my $min_h = 999999;
+
+        my $max_w_n = '';
+        my $max_h_n = '';
+        my $min_w_n = '';
+        my $min_h_n = '';
+
+        # get or convert eps files and collect stats
+        foreach my $c (@n) {
+            # get the eps file
+            my $epsname = "${c}.eps";
+            my $f = "$epicdir/$epsname";
+            if (! -f $f) {
+	        print "WARNING: Eps file '$f' not found...regenerating.\n"
+	        if $G::warn;
+	        my $fname = $mref->{$c}{file};
+	        my $f2 = $fname;
+	        if (! -f $f2) {
+	            print "  WARNING: Source file '$f2' not found...skipping.\n"
+	            if $G::warn;
+	            next;
+	        }
+	        # generate the file
+	        convert_single_pic_to_eps($f2, $f);
+            }
+
+            if (!exists $origmate{$c}) {
+	        # get the eps lines
+	        open my $fp, '<', $f
+	                           or die "Unable to open file '$f': $!\n";
+	        my @lines = <$fp>;
+	        close $fp;
+	        $origmate{$c}{flines} = [ @lines ];
+	        ++$norigmates;
+
+	        # get the bounding box
+	        my ($llx, $lly, $urx, $ury) = ();
+	        foreach my $line (@{$origmate{$c}{flines}}) {
+	            if ($line =~ m{\A \%\%BoundingBox:
+			 \s+ (\d+)
+			 \s+ (\d+)
+			 \s+ (\d+)
+			 \s+ (\d+)
+			 \s*
+		      }xms) {
+	                $llx = $1;
+	                die "bad bbox width" if ($llx != 0);
+	                $lly = $2;
+	                die "bad bbox height" if ($lly != 0);
+	                $urx = $3;
+	                $ury = $4;
+
+	                $origmate{$c}{urx} = $urx;
+	                $origmate{$c}{ury} = $ury;
+	                print "  bounding box: $1 $2 $3 $4\n"
+	                if $G::debug;
+
+	                last;
+	            }
+	        }
+            }
+            my ($llx, $lly) = (0, 0);
+            my $urx = $origmate{$c}{urx};
+            my $ury = $origmate{$c}{ury};
+
+            print "Using eps file '$f'....\n" if $G::debug;
+
+            # collect stats
+            if ($urx > $max_w) {
+	       $max_w = $urx;
+	       $max_w_n = $c;
+            }
+            if ($ury > $max_h) {
+	       $max_h = $ury;
+	       $max_h_n = $c;
+            }
+
+            if ($urx < $min_w) {
+	       $min_w = $urx;
+	       $min_w_n = $c;
+            }
+
+            if ($ury < $min_h) {
+	       $min_h = $ury;
+	       $min_h_n = $c;
+            }
+
+        } # all members of the CS
+
+        printf "Max width  = $max_w points (%.2f inches)\n", $max_w/72;
+        printf "Min width  = $min_w points (%.2f inches)\n", $min_w/72;
+
+        printf "Max height = $max_h points (%.2f inches)\n", $max_h/72;
+        printf "Min height = $min_h points (%.2f inches)\n", $min_h/72;
+
+        print  "Widest picture:    $max_w_n\n";
+        print  "Narrowest picture: $min_w_n\n";
+        print  "Tallest picture:   $max_h_n\n";
+        print  "Shortest picture:  $min_h_n\n";
+
+        if ($G::pstats) {
+            my $s = $norigmates == 1 ? '' : 's';
+            print "Found $norigmates picture$s.\n";
+            print "Ending early after showing stats.\n";
+            exit;
+        }
+
+        # now we should have all necessary data
+        # insert pictures
+        for (my $i = 0; $i < $ntlines; ++$i) {
+            my $t = $tlines[$i];
+            # output lines until we get to where the pictures are desired
+            print $fpo $t;
+            if ($t =~ m{insert-header}xms) {
+	       print $fpo "0 -28 moveto (Class of 1965\320Cadet Squadron $cs) 10 puttext\n";
+            }
+            elsif ($t =~ m{start-pictures}xms) {
+	        # draft overlay
+	        if ($G::draft) {
+	            print $fpo "\n";
+	            print $fpo "%% a DRAFT overlay\n";
+	            print $fpo "gsave\n";
+	            #print $fpo "5.5 i2p 4.25 i2p translate 25 rot\n";
+	            print $fpo "5.5 i2p 7.25 i2p translate\n";
+	            print $fpo "0.85 setgray\n";
+	            print $fpo "/Times-Bold 120 selectfont\n";
+	            print $fpo "0 0 moveto (D R A F T) 0 puttext\n";
+	            print $fpo "grestore\n";
+	            print $fpo "\n";
+	        }
+
+	        # font for names
+	        print $fpo "gsave\n";
+	        print $fpo "/Times 10 selectfont\n";
+	        insert_pictures($fpo, \@n, \%origmate, $mref, $legal);
+	        print $fpo "grestore\n";
+	        print $fpo "%% end-pictures\n";
+
+	        # class of 1965 logo
+	        my $class_logo = "$G::imdir/65_Class_Logo_2.eps";
+	        my $ctry = 7.25 * 72;
+	        my $ctrx = 1.25 * 72;
+	        insert_logo($fpo, $class_logo, 1200, $ctrx, $ctry);
+
+                # CS logo
+                # legal?
+                if ($legal) {
+	            $ctrx = 12.75 * 72;
+                }
+                else {
+	            $ctrx = 9.75 * 72;
+                }
+	        insert_logo($fpo, $logo_eps, $npix, $ctrx, $ctry);
+            }
+        }
+
+        printf "Creating pdf montage for CS-%02d...\n", $cs;
+        qx(ps2pdf $psfil $pdfil);
+        push @G::ofils, $pdfil;
+        #unlink $psfil;
+
+    } # for each sqdn
+
+} # build_montage
+
 sub collect_pic_info is export {
     my $dir  = shift @_;
     my $fref = shift @_;
@@ -666,280 +938,6 @@ sub decode_name is export {
   return ($last, $middle, $suff, $num);
 
 } #  decode_name
-
-sub build_montage is export {
-  # for each CS, build a
-  # PostScript picture for conversion to pdf; use the original tifs
-  # See 'gen_montage' for original specific procedures.
-  my $mref  = shift @_; # \%CL::mates
-  my $cs    = shift @_;
-
-  # some local vars
-  # where to find input eps pics
-  my $epicdir = './pics-eps';
-  # where to find output montage files (shared with other files!)
-  my $moutdir = './site-public-downloads';
-
-  # collect the names by sqdn
-  print "Collecting names by CS...\n";
-  my %sqdn = ();
-  U65::get_keys_by_sqdn(\%sqdn, $mref);
-
-  my @cs = (1..24);
-  if ($cs) {
-      @cs = ();
-      push @cs, $cs;
-  }
-
-  # avoid duplication, collect eps lines
-  my %origmate = ();
-  my $norigmates = 0;
-
-  # open the templates and read all lines
-  open my $fpt, '<', $G::template1a # the default template
-    or die "Unable to open file '$G::template1a': $!\n";
-  my @tlines1a = <$fpt>;
-  close $fpt;
-  my $ntlines1a = @tlines1a;
-
-  open $fpt, '<', $G::template1b # the legal-size template
-    or die "Unable to open file '$G::template1b': $!\n";
-  my @tlines1b = <$fpt>;
-  close $fpt;
-  my $ntlines1b = @tlines1b;
-
-  foreach my $cs (@cs) {
-    printf "Building montage for CS-%02d...\n", $cs;
-
-    # get the pic count BEFORE naming the file
-
-    # names
-    my @n = @{$sqdn{$cs}};
-    my $n = scalar @n;
-
-    my @tlines;
-    my $ntlines;
-    my $legal;
-    if ($n > 32) {
-        @tlines  = @tlines1b;
-        $ntlines = $ntlines1b;
-        $legal   = 1;
-    }
-    else {
-        @tlines  = @tlines1a;
-        $ntlines = $ntlines1a;
-        $legal   = 0;
-    }
-
-    my ($psfil, $pdfil);
-    if ($legal) {
-        $psfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961-legal.ps", $cs;
-        $pdfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961-legal.pdf", $cs;
-    }
-    else {
-        $psfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961.ps", $cs;
-        $pdfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961.pdf", $cs;
-    }
-
-    if (-f $pdfil && !$G::force) {
-      say "File $pdfil exists...keeping it.";
-      push @G::ofils, $pdfil;
-      next;
-    }
-    elsif (-f $psfil && !$G::force) {
-      say "File $psfil exists...using it for pdf.";
-      printf "Creating pdf montage for CS-%02d...\n", $cs;
-      qx(ps2pdf $psfil $pdfil);
-      push @G::ofils, $pdfil;
-      unlink $psfil if !$G::debug;
-      next;
-    }
-
-    say "Creating PS file $psfil from scratch";
-    open my $fpo, '>', $psfil
-      or die "Unable to open file '$psfil': $!\n";
-
-    # get logo
-    my $npix = 125; # or 150
-    my $logo_base = "cs-${cs}-${npix}h";
-    my $logo_png  = "./web-site/images/$logo_base.png";
-    my $logo_eps  = "$epicdir/$logo_base.eps";
-    if (!-f $logo_eps) {
-      printf "Generating EPS logo for CS-%02d...\n", $cs;
-      qx(gm convert $logo_png $logo_eps);
-    }
-
-    # need to collect some stats
-    my $max_w = 0;
-    my $max_h = 0;
-
-    my $min_w = 999999;
-    my $min_h = 999999;
-
-    my $max_w_n = '';
-    my $max_h_n = '';
-    my $min_w_n = '';
-    my $min_h_n = '';
-
-    # get or convert eps files and collect stats
-    foreach my $c (@n) {
-      # get the eps file
-      my $epsname = "${c}.eps";
-      my $f = "$epicdir/$epsname";
-      if (! -f $f) {
-	print "WARNING: Eps file '$f' not found...regenerating.\n"
-	  if $G::warn;
-	my $fname = $mref->{$c}{file};
-	my $f2 = $fname;
-	if (! -f $f2) {
-	  print "  WARNING: Source file '$f2' not found...skipping.\n"
-	    if $G::warn;
-	  next;
-	}
-	# generate the file
-	convert_single_pic_to_eps($f2, $f);
-      }
-
-      if (!exists $origmate{$c}) {
-	# get the eps lines
-	open my $fp, '<', $f
-	  or die "Unable to open file '$f': $!\n";
-	my @lines = <$fp>;
-	close $fp;
-	$origmate{$c}{flines} = [ @lines ];
-	++$norigmates;
-
-	# get the bounding box
-	my ($llx, $lly, $urx, $ury) = ();
-	foreach my $line (@{$origmate{$c}{flines}}) {
-	  if ($line =~ m{\A \%\%BoundingBox:
-			 \s+ (\d+)
-			 \s+ (\d+)
-			 \s+ (\d+)
-			 \s+ (\d+)
-			 \s*
-		      }xms) {
-	    $llx = $1;
-	    die "bad bbox width" if ($llx != 0);
-	    $lly = $2;
-	    die "bad bbox height" if ($lly != 0);
-	    $urx = $3;
-	    $ury = $4;
-
-	    $origmate{$c}{urx} = $urx;
-	    $origmate{$c}{ury} = $ury;
-	    print "  bounding box: $1 $2 $3 $4\n"
-	      if $G::debug;
-
-	    last;
-	  }
-	}
-      }
-      my ($llx, $lly) = (0, 0);
-      my $urx = $origmate{$c}{urx};
-      my $ury = $origmate{$c}{ury};
-
-      print "Using eps file '$f'....\n" if $G::debug;
-
-      # collect stats
-      if ($urx > $max_w) {
-	$max_w = $urx;
-	$max_w_n = $c;
-      }
-      if ($ury > $max_h) {
-	$max_h = $ury;
-	$max_h_n = $c;
-      }
-
-      if ($urx < $min_w) {
-	$min_w = $urx;
-	$min_w_n = $c;
-      }
-
-      if ($ury < $min_h) {
-	$min_h = $ury;
-	$min_h_n = $c;
-      }
-
-    } # all members of the CS
-
-    printf "Max width  = $max_w points (%.2f inches)\n", $max_w/72;
-    printf "Min width  = $min_w points (%.2f inches)\n", $min_w/72;
-
-    printf "Max height = $max_h points (%.2f inches)\n", $max_h/72;
-    printf "Min height = $min_h points (%.2f inches)\n", $min_h/72;
-
-    print  "Widest picture:    $max_w_n\n";
-    print  "Narrowest picture: $min_w_n\n";
-    print  "Tallest picture:   $max_h_n\n";
-    print  "Shortest picture:  $min_h_n\n";
-
-    if ($G::pstats) {
-      my $s = $norigmates == 1 ? '' : 's';
-      print "Found $norigmates picture$s.\n";
-      print "Ending early after showing stats.\n";
-      exit;
-    }
-
-    # now we should have all necessary data
-    # insert pictures
-    for (my $i = 0; $i < $ntlines; ++$i) {
-      my $t = $tlines[$i];
-      # output lines until we get to where the pictures are desired
-      print $fpo $t;
-      if ($t =~ m{insert-header}xms) {
-	print $fpo "0 -28 moveto (Class of 1965\320Cadet Squadron $cs) 10 puttext\n";
-      }
-      elsif ($t =~ m{start-pictures}xms) {
-
-	# draft overlay
-	if ($G::draft) {
-	  print $fpo "\n";
-	  print $fpo "%% a DRAFT overlay\n";
-	  print $fpo "gsave\n";
-	  #print $fpo "5.5 i2p 4.25 i2p translate 25 rot\n";
-	  print $fpo "5.5 i2p 7.25 i2p translate\n";
-	  print $fpo "0.85 setgray\n";
-	  print $fpo "/Times-Bold 120 selectfont\n";
-	  print $fpo "0 0 moveto (D R A F T) 0 puttext\n";
-	  print $fpo "grestore\n";
-	  print $fpo "\n";
-	}
-
-	# font for names
-	print $fpo "gsave\n";
-	print $fpo "/Times 10 selectfont\n";
-	insert_pictures($fpo, \@n, \%origmate, $mref, $legal);
-	print $fpo "grestore\n";
-	print $fpo "%% end-pictures\n";
-
-	# class of 1965 logo
-	my $class_logo = "$G::imdir/65_Class_Logo_2.eps";
-	my $ctry = 7.25 * 72;
-	my $ctrx = 1.25 * 72;
-	insert_logo($fpo, $class_logo, 1200, $ctrx, $ctry);
-
-        # CS logo
-        # legal?
-        if ($legal) {
-	    $ctrx = 12.75 * 72;
-        }
-        else {
-	    $ctrx = 9.75 * 72;
-        }
-	insert_logo($fpo, $logo_eps, $npix, $ctrx, $ctry);
-      }
-    }
-
-    printf "Creating pdf montage for CS-%02d...\n", $cs;
-    qx(ps2pdf $psfil $pdfil);
-    push @G::ofils, $pdfil;
-    #unlink $psfil;
-
-  } # for each sqdn
-
-
-} # build_montage
 
 sub produce_web_jpg_from_tif is export {
   my $tif      = shift @_;
