@@ -1296,7 +1296,3 @@ sub assemble_name is export {
   return $name;
 
 } # assemble_name
-
-
-##### obligatory 1 return for a package #####
-1;
