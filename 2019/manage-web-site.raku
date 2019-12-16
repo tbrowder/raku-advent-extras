@@ -6,7 +6,7 @@ use G; # global vars for port to Raku
 use PicFuncs;     # for picture and montage generation
 
 # for local Perl modules
-use lib:from<Perl5> ('.', 'lib');
+use lib:from<Perl5> ('lib');
 
 #=== Perl modules ===========================================
 # public modules available from CPAN
