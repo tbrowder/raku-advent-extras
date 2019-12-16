@@ -89,7 +89,8 @@ sub build_montage is export {
         elsif (-f $psfil && !$G::force) {
             say "File $psfil exists...using it for pdf.";
             printf "Creating pdf montage for CS-%02d...\n", $cs;
-            qx(ps2pdf $psfil $pdfil);
+            #qx(ps2pdf $psfil $pdfil);
+            shell "ps2pdf $psfil $pdfil";
             push @G::ofils, $pdfil;
             unlink $psfil if !$G::debug;
             next;
