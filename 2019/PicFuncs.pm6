@@ -233,8 +233,10 @@ sub build_montage(%mates, $cs) is export {
 
         # now we should have all necessary data
         # insert pictures
-        for (my $i = 0; $i < $ntlines; ++$i) {
-            my $t = $tlines[$i];
+        #for (my $i = 0; $i < $ntlines; ++$i) {
+        my $i;
+        loop ($i = 0; $i < $ntlines; ++$i) {
+            my $t = @tlines[$i];
             # output lines until we get to where the pictures are desired
             print $fpo $t;
             if ($t =~ m{insert-header}xms) {
