@@ -1,12 +1,5 @@
 unit module PicFuncs;
 
-use feature 'say';
-use strict;
-use warnings;
-
-use Perl6::Export::Attrs;
-use Carp;
-
 use lib '.';
 use G;
 
