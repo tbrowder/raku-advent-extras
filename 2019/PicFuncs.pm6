@@ -20,7 +20,8 @@ sub build_montage is export {
     # collect the names by sqdn
     print "Collecting names by CS...\n";
     my %sqdn = ();
-    U65::get_keys_by_sqdn(\%sqdn, $mref);
+    #U65::get_keys_by_sqdn(\%sqdn, $mref);
+    U65::get_keys_by_sqdn(%sqdn, $mref);
 
     my @cs = (1..24);
     if ($cs) {
@@ -45,13 +46,15 @@ sub build_montage is export {
     close $fpt;
     my $ntlines1b = @tlines1b;
 
-    foreach my $cs (@cs) {
+    #foreach my $cs (@cs) {
+    for @cs -> $cs {
         printf "Building montage for CS-%02d...\n", $cs;
 
         # get the pic count BEFORE naming the file
 
         # names
-        my @n = @{$sqdn{$cs}};
+        #my @n = @{$sqdn{$cs}};
+        my @n = @(%sqdn{$cs});
         my $n = scalar @n;
 
         my @tlines;
@@ -119,7 +122,8 @@ sub build_montage is export {
         my $min_h_n = '';
 
         # get or convert eps files and collect stats
-        foreach my $c (@n) {
+        #foreach my $c (@n) {
+        for @n -> $c {
             # get the eps file
             my $epsname = "${c}.eps";
             my $f = "$epicdir/$epsname";
@@ -292,25 +296,34 @@ sub collect_pic_info is export {
     processdir($dir, \%f);
 
     # merge data into CL.pm
-    foreach my $n (keys %f) {
-        if (!exists $CL::mates{$n}) {
+    #foreach my $n (keys %f) {
+    for %f.keys -> $n {
+        #if (!exists $CL::mates{$n}) {
+        if !($CL::mates{$n}:exists) {
             warn "Name '$n' not in CL::mates hash--adding\n";
-            $CL::mates{$n}{page}     = $f{$n}{page};
-            $CL::mates{$n}{pagepart} = $f{$n}{pagepart};
-            $CL::mates{$n}{file}     = $f{$n}{file};
+            %CL::mates{$n}<page>     = %f{$n}<page>;
+            %CL::mates{$n}<pagepart> = %f{$n}<pagepart>;
+            %CL::mates{$n}<file>     = %f{$n}<file>;
         }
         else {
-            if ($f{$n}{page} ne $CL::mates{$n}{page}) {
+            #if ($f{$n}{page} ne $CL::mates{$n}{page}) {
+            if %f{$n}<page> ne %CL::mates{$n}<page> {
 	        warn "Name '$n' has different 'page' in CL::mates hash\n";
             }
-            if ($f{$n}{pagepart} ne $CL::mates{$n}{pagepart}) {
+            #if ($f{$n}{pagepart} ne $CL::mates{$n}{pagepart}) {
+            if (%f{$n}<pagepart> ne %CL::mates{$n}<pagepart>) {
 	        warn "Name '$n' has different 'pagepart' in CL::mates hash\n";
             }
-            if ($f{$n}{file} ne $CL::mates{$n}{file}) {
+            #if ($f{$n}{file} ne $CL::mates{$n}{file}) {
+            if (%f{$n}<file> ne %CL::mates{$n}<file>) {
 	        warn "Name '$n' has different 'file' in CL::mates hash\n";
             }
         }
     }
+
+} # <= temp ending of this sub
+
+=finish
 
     # a reusable file pointer
     my $fp;
