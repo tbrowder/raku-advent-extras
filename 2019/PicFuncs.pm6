@@ -271,7 +271,7 @@ sub build_montage(%mates, $cs) is export {
 	        $fpo.print: "gsave\n";
 	        $fpo.print: "/Times 10 selectfont\n";
 	        #insert_pictures($fpo, \@n, \%origmate, $mref, $legal);
-	        insert_pictures($fpo, \@n, \%origmate, $mref, $legal);
+	        insert_pictures($fpo, @n, %origmate, %mates, $legal);
 	        $fpo.print: "grestore\n";
 	        $fpo.print: "%% end-pictures\n";
 
