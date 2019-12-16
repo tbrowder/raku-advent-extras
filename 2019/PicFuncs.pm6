@@ -2,7 +2,6 @@ use v6;
 
 unit module PicFuncs;
 
-use lib '.';
 use G;
 
 sub build_montage is export {
