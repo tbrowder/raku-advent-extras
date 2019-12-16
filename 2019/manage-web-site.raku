@@ -10,9 +10,9 @@ use lib:from<Perl5> ('.', 'lib');
 # and should not be needed in this file
 #-----------------------------------
 # local modules in this dir (.):
-use G:from<Perl5>; # global vars for port to Raku
+use G; # global vars for port to Raku
 use OtherFuncs:from<Perl5>; # for subs moved from this file
-use PicFuncs:from<Perl5>;     # for picture and montage generation
+use PicFuncs;     # for picture and montage generation
 # other data and functions in dir 'lib':
 use ManageWebSite:from<Perl5>;
 use GEO_MAPS_USAFA:from<Perl5>;
