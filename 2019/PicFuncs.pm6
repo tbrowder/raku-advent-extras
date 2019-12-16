@@ -145,7 +145,7 @@ sub build_montage(%mates, $cs) is export {
 	        convert_single_pic_to_eps($f2, $f);
             }
 
-            if (!exists $origmate{$c}) {
+            if !(%origmate{$c}:exists) {
 	        # get the eps lines
 	        open my $fp, '<', $f
 	                           or die "Unable to open file '$f': $!\n";
