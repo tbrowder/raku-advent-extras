@@ -132,8 +132,9 @@ sub build_montage(%mates, $cs) is export {
             my $f = "$epicdir/$epsname";
             if (! -f $f) {
 	        print "WARNING: Eps file '$f' not found...regenerating.\n"
-	        if $G::warn;
-	        my $fname = $mref->{$c}{file};
+	            if $G::warn;
+	        #my $fname = $mref->{$c}{file};
+	        my $fname = %mates{$c}<file>;
 	        my $f2 = $fname;
 	        if (! -f $f2) {
 	            print "  WARNING: Source file '$f2' not found...skipping.\n"
