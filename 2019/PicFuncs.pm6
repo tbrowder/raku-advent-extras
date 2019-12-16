@@ -159,34 +159,36 @@ sub build_montage(%mates, $cs) is export {
 	        my ($llx, $lly, $urx, $ury) = ();
 	        #foreach my $line (@{$origmate{$c}{flines}}) {
 	        for @(%origmate{$c}<flines>) -> $line {
-	            if ($line =~ m{\A \%\%BoundingBox:
+	            #if ($line =~ m{\A \%\%BoundingBox:
+	            if $line ~~ /^ '%%BoundingBox:'
 			 \s+ (\d+)
 			 \s+ (\d+)
 			 \s+ (\d+)
 			 \s+ (\d+)
 			 \s*
-		      }xms) {
-	                $llx = $1;
+                         /
+		       {
+	                $llx = +$0;
 	                die "bad bbox width" if ($llx != 0);
-	                $lly = $2;
+	                $lly = +$1;
 	                die "bad bbox height" if ($lly != 0);
-	                $urx = $3;
-	                $ury = $4;
+	                $urx = +$2;
+	                $ury = +$3;
 
-	                $origmate{$c}{urx} = $urx;
-	                $origmate{$c}{ury} = $ury;
-	                print "  bounding box: $1 $2 $3 $4\n"
-	                if $G::debug;
+	                %origmate{$c}<urx> = $urx;
+	                %origmate{$c}<ury> = $ury;
+	                say "  bounding box: $0 $1 $2 $3"
+	                    if $G::debug;
 
 	                last;
 	            }
 	        }
             }
             my ($llx, $lly) = (0, 0);
-            my $urx = $origmate{$c}{urx};
-            my $ury = $origmate{$c}{ury};
+            my $urx = %origmate{$c}<urx>;
+            my $ury = %origmate{$c}<ury>;
 
-            print "Using eps file '$f'....\n" if $G::debug;
+            say "Using eps file '$f'...." if $G::debug;
 
             # collect stats
             if ($urx > $max_w) {
