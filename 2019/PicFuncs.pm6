@@ -151,12 +151,14 @@ sub build_montage(%mates, $cs) is export {
 	                           or die "Unable to open file '$f': $!\n";
 	        my @lines = <$fp>;
 	        close $fp;
-	        $origmate{$c}{flines} = [ @lines ];
+	        #$origmate{$c}{flines} = [ @lines ];
+	        %origmate{$c}<flines> = @lines;
 	        ++$norigmates;
 
 	        # get the bounding box
 	        my ($llx, $lly, $urx, $ury) = ();
-	        foreach my $line (@{$origmate{$c}{flines}}) {
+	        #foreach my $line (@{$origmate{$c}{flines}}) {
+	        for @(%origmate{$c}<flines>) -> $line {
 	            if ($line =~ m{\A \%\%BoundingBox:
 			 \s+ (\d+)
 			 \s+ (\d+)
