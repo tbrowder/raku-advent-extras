@@ -22,7 +22,7 @@ sub build_montage(%mates, $cs) is export {
     U65::get_keys_by_sqdn(%sqdn, %mates);
 
     my @cs = (1..24);
-    if ($cs) {
+    if $cs {
         @cs = ();
         push @cs, $cs;
     }
@@ -50,7 +50,7 @@ sub build_montage(%mates, $cs) is export {
         my @tlines;
         my $ntlines;
         my $legal;
-        if ($n > 32) {
+        if $n > 32 {
             @tlines  = @tlines1b;
             $ntlines = $ntlines1b;
             $legal   = 1;
@@ -62,7 +62,7 @@ sub build_montage(%mates, $cs) is export {
         }
 
         my ($psfil, $pdfil);
-        if ($legal) {
+        if $legal {
             $psfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961-legal.ps", $cs;
             $pdfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961-legal.pdf", $cs;
         }
@@ -169,21 +169,21 @@ sub build_montage(%mates, $cs) is export {
             say "Using eps file '$f'...." if $G::debug;
 
             # collect stats
-            if ($urx > $max_w) {
+            if $urx > $max_w {
 	       $max_w = $urx;
 	       $max_w_n = $c;
             }
-            if ($ury > $max_h) {
+            if $ury > $max_h {
 	       $max_h = $ury;
 	       $max_h_n = $c;
             }
 
-            if ($urx < $min_w) {
+            if $urx < $min_w {
 	       $min_w = $urx;
 	       $min_w_n = $c;
             }
 
-            if ($ury < $min_h) {
+            if $ury < $min_h {
 	       $min_h = $ury;
 	       $min_h_n = $c;
             }
@@ -201,7 +201,7 @@ sub build_montage(%mates, $cs) is export {
         print  "Tallest picture:   $max_h_n\n";
         print  "Shortest picture:  $min_h_n\n";
 
-        if ($G::pstats) {
+        if $G::pstats {
             my $s = $norigmates == 1 ?? '' !! 's';
             print "Found $norigmates picture$s.\n";
             print "Ending early after showing stats.\n";
@@ -216,30 +216,29 @@ sub build_montage(%mates, $cs) is export {
             # output lines until we get to where the pictures are desired
             $fpo.print: $t;
             if $t ~~ /'insert-header'/ {
-	       $fpo.print: "0 -28 moveto (Class of 1965\\320Cadet Squadron $cs) 10 puttext\n";
+	       $fpo.say: "0 -28 moveto (Class of 1965\\320Cadet Squadron $cs) 10 puttext";
             }
             elsif $t ~~ /'start-pictures'/ {
 	        # draft overlay
-	        if ($G::draft) {
-	            $fpo.print: "\n";
-	            $fpo.print: "%% a DRAFT overlay\n";
-	            $fpo.print: "gsave\n";
-	            #print $fpo "5.5 i2p 4.25 i2p translate 25 rot\n";
-	            $fpo.print: "5.5 i2p 7.25 i2p translate\n";
-	            $fpo.print: "0.85 setgray\n";
-	            $fpo.print: "/Times-Bold 120 selectfont\n";
-	            $fpo.print: "0 0 moveto (D R A F T) 0 puttext\n";
-	            $fpo.print: "grestore\n";
-	            $fpo.print: "\n";
+	        if $G::draft {
+	            $fpo.say: "";
+	            $fpo.say: '%% a DRAFT overlay';
+	            $fpo.say: "gsave";
+	            #$fpo.say: "5.5 i2p 4.25 i2p translate 25 rot";
+	            $fpo.say: "5.5 i2p 7.25 i2p translate";
+	            $fpo.say: "0.85 setgray";
+	            $fpo.say: "/Times-Bold 120 selectfont";
+	            $fpo.say: "0 0 moveto (D R A F T) 0 puttext";
+	            $fpo.say: "grestore";
+	            $fpo.say: "";
 	        }
 
 	        # font for names
-	        $fpo.print: "gsave\n";
-	        $fpo.print: "/Times 10 selectfont\n";
-	        #insert_pictures($fpo, \@n, \%origmate, $mref, $legal);
+	        $fpo.say: "gsave";
+	        $fpo.say: "/Times 10 selectfont";
 	        insert_pictures($fpo, @n, %origmate, %mates, $legal);
-	        $fpo.print: "grestore\n";
-	        $fpo.print: "%% end-pictures\n";
+	        $fpo.say: "grestore";
+	        $fpo.say: '%% end-pictures';
 
 	        # class of 1965 logo
 	        my $class_logo = "$G::imdir/65_Class_Logo_2.eps";
@@ -249,7 +248,7 @@ sub build_montage(%mates, $cs) is export {
 
                 # CS logo
                 # legal?
-                if ($legal) {
+                if $legal {
 	            $ctrx = 12.75 * 72;
                 }
                 else {
