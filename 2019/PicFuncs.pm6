@@ -131,10 +131,13 @@ sub build_montage(%mates, $cs) is export {
 
             if !(%origmate{$c}:exists) {
 	        # get the eps lines
+                =begin comment
 	        open my $fp, '<', $f
 	            or die "Unable to open file '$f': $!\n";
 	        my @lines = <$fp>;
 	        close $fp;
+                =end comment
+                my @lines = $f.IO.lines;
 	        %origmate{$c}<flines> = @lines;
 	        ++$norigmates;
 
