@@ -19,7 +19,6 @@ sub build_montage(%mates, $cs) is export {
     # collect the names by sqdn
     print "Collecting names by CS...\n";
     my %sqdn = ();
-    #U65::get_keys_by_sqdn(\%sqdn, $mref);
     U65::get_keys_by_sqdn(%sqdn, %mates);
 
     my @cs = (1..24);
@@ -33,32 +32,18 @@ sub build_montage(%mates, $cs) is export {
     my $norigmates = 0;
 
     # open the templates and read all lines
-    =begin comment
-    open my $fpt, '<', $G::template1a # the default template
-        or die "Unable to open file '$G::template1a': $!\n";
-    my @tlines1a = <$fpt>;
-    close $fpt;
-    =end comment
     my @tlines1a = "$G::template1a".lines;
     my $ntlines1a = @tlines1a;
 
-    =begin comment
-    open $fpt, '<', $G::template1b # the legal-size template
-        or die "Unable to open file '$G::template1b': $!\n";
-    my @tlines1b = <$fpt>;
-    close $fpt;
-    =end comment
     my @tlines1b = "$G::template1b".lines;
     my $ntlines1b = @tlines1b;
 
-    #foreach my $cs (@cs) {
     for @cs -> $cs {
         printf "Building montage for CS-%02d...\n", $cs;
 
         # get the pic count BEFORE naming the file
 
         # names
-        #my @n = @{$sqdn{$cs}};
         my @n = @(%sqdn{$cs});
         my $n = @n.elems;
 
@@ -86,17 +71,14 @@ sub build_montage(%mates, $cs) is export {
             $pdfil = sprintf "$moutdir/usafa-1965-cs%02d-fall-1961.pdf", $cs;
         }
 
-        #if (-f $pdfil && !$G::force) {
         if $pdfil.IO.f && !$G::force {
             say "File $pdfil exists...keeping it.";
             push @G::ofils, $pdfil;
             next;
         }
-        #elsif (-f $psfil && !$G::force) {
         elsif $psfil.IO.f && !$G::force {
             say "File $psfil exists...using it for pdf.";
             printf "Creating pdf montage for CS-%02d...\n", $cs;
-            #qx(ps2pdf $psfil $pdfil);
             shell "ps2pdf $psfil $pdfil";
             push @G::ofils, $pdfil;
             unlink $psfil if !$G::debug;
@@ -104,22 +86,15 @@ sub build_montage(%mates, $cs) is export {
         }
 
         say "Creating PS file $psfil from scratch";
-        =begin comment
-        open my $fpo, '>', $psfil
-           or die "Unable to open file '$psfil': $!\n";
-        =end comment
         my $fpo = open $psfil, :w;
 
         # get logo
         my $npix = 125; # or 150
-        #my $logo_base = "cs-${cs}-${npix}h";
         my $logo_base = "cs-{$cs}-{$npix}h";
         my $logo_png  = "./web-site/images/$logo_base.png";
         my $logo_eps  = "$epicdir/$logo_base.eps";
-        #if (!-f $logo_eps) {
         if !$logo_eps.IO.f {
             printf "Generating EPS logo for CS-%02d...\n", $cs;
-            #qx(gm convert $logo_png $logo_eps);
             shell "gm convert $logo_png $logo_eps";
         }
 
@@ -136,20 +111,15 @@ sub build_montage(%mates, $cs) is export {
         my $min_h_n = '';
 
         # get or convert eps files and collect stats
-        #foreach my $c (@n) {
         for @n -> $c {
             # get the eps file
-            #my $epsname = "${c}.eps";
             my $epsname = "{$c}.eps";
             my $f = "$epicdir/$epsname";
-            #if (! -f $f) {
             if !$f.IO.f {
 	        print "WARNING: Eps file '$f' not found...regenerating.\n"
 	            if $G::warn;
-	        #my $fname = $mref->{$c}{file};
 	        my $fname = %mates{$c}<file>;
 	        my $f2 = $fname;
-	        #if (! -f $f2) {
 	        if !$f2.IO.f {
 	            print "  WARNING: Source file '$f2' not found...skipping.\n"
 	            if $G::warn;
@@ -162,18 +132,15 @@ sub build_montage(%mates, $cs) is export {
             if !(%origmate{$c}:exists) {
 	        # get the eps lines
 	        open my $fp, '<', $f
-	                           or die "Unable to open file '$f': $!\n";
+	            or die "Unable to open file '$f': $!\n";
 	        my @lines = <$fp>;
 	        close $fp;
-	        #$origmate{$c}{flines} = [ @lines ];
 	        %origmate{$c}<flines> = @lines;
 	        ++$norigmates;
 
 	        # get the bounding box
 	        my ($llx, $lly, $urx, $ury) = ();
-	        #foreach my $line (@{$origmate{$c}{flines}}) {
 	        for @(%origmate{$c}<flines>) -> $line {
-	            #if ($line =~ m{\A \%\%BoundingBox:
 	            if $line ~~ /^ '%%BoundingBox:'
 			 \s+ (\d+)
 			 \s+ (\d+)
@@ -238,7 +205,6 @@ sub build_montage(%mates, $cs) is export {
         print  "Shortest picture:  $min_h_n\n";
 
         if ($G::pstats) {
-            #my $s = $norigmates == 1 ? '' : 's';
             my $s = $norigmates == 1 ?? '' !! 's';
             print "Found $norigmates picture$s.\n";
             print "Ending early after showing stats.\n";
@@ -247,13 +213,11 @@ sub build_montage(%mates, $cs) is export {
 
         # now we should have all necessary data
         # insert pictures
-        #for (my $i = 0; $i < $ntlines; ++$i) {
         my $i;
         loop ($i = 0; $i < $ntlines; ++$i) {
             my $t = @tlines[$i];
             # output lines until we get to where the pictures are desired
             $fpo.print: $t;
-            #if ($t =~ m{insert-header}xms) {
             if $t ~~ /'insert-header'/ {
 	       $fpo.print: "0 -28 moveto (Class of 1965\\320Cadet Squadron $cs) 10 puttext\n";
             }
@@ -299,7 +263,6 @@ sub build_montage(%mates, $cs) is export {
         }
 
         printf "Creating pdf montage for CS-%02d...\n", $cs;
-        #qx(ps2pdf $psfil $pdfil);
         shell "ps2pdf $psfil $pdfil";
         push @G::ofils, $pdfil;
         #unlink $psfil;
