@@ -26,10 +26,15 @@ if not @*ARGS.elems {
     Usage: {$*PROGRAM.basename} pdf=X title=Y [...options...]
 
     Args
-      pdf[=X] - list of pdf docs to combine [default: list]
-
-              - where X is a comma-separated list of paths
-                  to existing PDF documents to be combined
+      pdf[=X] - list of pdf docs to combine [default: an internal list]
+              - where X is either 
+                  + a comma-separated list of paths
+                    to existing PDF documents to be combined
+                        OR
+                  + the name of a file listing PDF docs to be combined,
+                    one name per line, comments and blank lines are
+                    ignored
+                  
       title=Y - where Y is the desired title for the combined
                   document; spaces are indicated by periods;
                   e.g., 'My.Title'
