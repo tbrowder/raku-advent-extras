@@ -27,14 +27,14 @@ if not @*ARGS.elems {
 
     Args
       pdf[=X] - list of pdf docs to combine [default: an internal list]
-              - where X is either 
+              - where X is either
                   + a comma-separated list of paths
                     to existing PDF documents to be combined
                         OR
                   + the name of a file listing PDF docs to be combined,
                     one name per line, comments and blank lines are
                     ignored
-                  
+
       title=Y - where Y is the desired title for the combined
                   document; spaces are indicated by periods;
                   e.g., 'My.Title'
@@ -88,7 +88,7 @@ for @*ARGS {
         $margin = +$0 * 72;
     }
     when /^ :i d / { ++$debug }
-    when /^ :i g / { 
+    when /^ :i g / {
         ; # okay: ++$go;
     }
     when /^ :i pd[f]? ['=' (\S+) ]? / {
@@ -173,7 +173,7 @@ for @pdf-objs.kv -> $i, $pdf-obj {
     }
 }
 say "Total input pages: $tot-pages";
-my $new-doc = "combined.pdf";
+my $new-doc = "an-apache-cro-websever.pdf";
 my $new-pages = $pdf.page-count;
 
 $pdf.save-as: $new-doc;
