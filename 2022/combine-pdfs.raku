@@ -58,7 +58,7 @@ for @*ARGS {
     when /^ :i n[umbers]? / {
         $page-numbers = True;
     }
-    when /^ :i p[aper]? '=' (\S+) / {
+    when /^ :i pa[per]? '=' (\S+) / {
         $paper = ~$0;
         if $paper ~~ /^ :i a4 $/ {
             $height = 11.7 * 72;
@@ -88,15 +88,24 @@ for @*ARGS {
         $margin = +$0 * 72;
     }
     when /^ :i d / { ++$debug }
-    when /^ :i pdf['=' (\S+) ]? / {
+    when /^ :i g / { 
+        ; # okay: ++$go;
+    }
+    when /^ :i pd[f]? ['=' (\S+) ]? / {
         if $0.defined {
-            note "NOTE: mode PDF=X NYI";
+            note "WARNING: mode 'pdf=X' is  NYI";
+            note "         Exiting..."; exit;
         }
         else {
             say "Using internal list of PDF files:";
             say "    $_" for @pdfs-in;
         }
     }
+    default {
+        note "WARNING: Unknown arg '$_'";
+        note "         Exiting..."; exit;
+    }
+
 }
 
 my @pdf-objs;
