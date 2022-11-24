@@ -173,7 +173,7 @@ for @pdf-objs.kv -> $i, $pdf-obj {
     }
 }
 say "Total input pages: $tot-pages";
-my $new-doc = "an-apache-cro-websever.pdf";
+my $new-doc = "an-apache-cro-web-server.pdf";
 my $new-pages = $pdf.page-count;
 
 $pdf.save-as: $new-doc;
