@@ -1,0 +1,728 @@
+%PDF-1.3
+%¥±ë¼
+1 0 obj
+<<
+  /CreationDate (D:20221124072037-06'00')
+  /Creator (Raku-6.d, PDF::Lite-0.0.12; PDF::Content-0.6.8; PDF-0.5.12)
+  /Producer (Pod::To::PDF::Lite-0.1.6)
+>>
+endobj
+
+2 0 obj
+<< /Type /Catalog /Lang (en) /Pages 3 0 R >>
+endobj
+
+3 0 obj
+<<
+  /Type /Pages
+  /Count 3
+  /Kids [ 4 0 R 12 0 R 17 0 R ]
+  /MediaBox [ 0 0 612 792 ]
+>>
+endobj
+
+4 0 obj
+<<
+  /Type /Page
+  /Contents 5 0 R
+  /Parent 3 0 R
+  /Resources <<
+    /ExtGState << /GS1 6 0 R /GS2 7 0 R >>
+    /Font << /F1 8 0 R /F2 9 0 R /F3 10 0 R >>
+  >>
+>>
+endobj
+
+5 0 obj
+<< /Length 3683 >> stream
+BT
+  1 0 0 1 72 704 Tm
+  /F1 10 Tf
+  (Building a Cro App - Part 2 building-a-cro-app-part-2 rakudo, programming, systems) Tj
+ET
+BT
+  1 0 0 1 72 682 Tm
+  (We have our Cro app built, authenticating, and doing all kinds of fun stuff. Let's take a look at deploying this bad) Tj
+  11 TL
+  T*
+  (wamma jamma!) Tj
+ET
+BT
+  1 0 0 1 72 649 Tm
+  (To do so we'll do the follow:) Tj
+ET
+BT
+  1 0 0 1 82 627 Tm
+  (•) Tj
+ET
+BT
+  1 0 0 1 92 627 Tm
+  (Create a systemd service file) Tj
+ET
+BT
+  1 0 0 1 82 605 Tm
+  (•) Tj
+ET
+BT
+  1 0 0 1 92 605 Tm
+  (Configure apache2 to serve our app) Tj
+ET
+BT
+  1 0 0 1 82 583 Tm
+  (•) Tj
+ET
+BT
+  1 0 0 1 92 583 Tm
+  (Set up SSL with apache2 for our service \(with Let's Encrypt\)) Tj
+ET
+BT
+  1 0 0 1 72 547.8 Tm
+  /F2 16 Tf
+  (Systemd) Tj
+ET
+BT
+  1 0 0 1 72 525.8 Tm
+  /F1 10 Tf
+  (This section is fairly straight forward but it requires some consideration:) Tj
+ET
+BT
+  1 0 0 1 82 503.8 Tm
+  (•) Tj
+ET
+BT
+  1 0 0 1 92 503.8 Tm
+  (Systemd is not loading your user's environment) Tj
+ET
+BT
+  1 0 0 1 82 481.8 Tm
+  (•) Tj
+ET
+BT
+  1 0 0 1 92 481.8 Tm
+  (Systemd is running as a different user than your own so your app root must have the right file permissions, by) Tj
+  T*
+  (default this user is ) Tj
+ET
+BT
+  1 0 0 1 92 470.8 Tm
+  /F3 8.5 Tf
+  [ -8888 (root) ] TJ
+ET
+BT
+  1 0 0 1 72 448.8 Tm
+  /F1 10 Tf
+  (For the purpose of this article we're just going to assume you've put your app root in ) Tj
+ET
+BT
+  1 0 0 1 72 448.8 Tm
+  /F3 8.5 Tf
+  [ -39929 (/opt/my-app) ] TJ
+ET
+BT
+  1 0 0 1 72 448.8 Tm
+  /F1 10 Tf
+  [ -39550 ( , you have a) ] TJ
+  T*
+  (working rakudo, that you have all of the dependencies for your app installed, and that the app is runnable on the) Tj
+  T*
+  (machine you're installing the systemd file on.) Tj
+ET
+BT
+  1 0 0 1 72 404.8 Tm
+  (In your services file ) Tj
+ET
+BT
+  1 0 0 1 72 404.8 Tm
+  /F3 8.5 Tf
+  [ -9671 (/etc/systemd/system/my-app.service) ] TJ
+ET
+BT
+  1 0 0 1 72 404.8 Tm
+  /F1 10 Tf
+  [ -25560 ( :) ] TJ
+ET
+BT
+  1 0 0 1 82 386.1 Tm
+  /F3 8.5 Tf
+  ([Unit]) Tj
+  9.35 TL
+  T*
+  (Description=My Cro App - A Tutorial) Tj
+  T*
+  (DefaultDependencies=no) Tj
+  T*
+  (After=network.target) Tj
+  T*
+  [ ] TJ
+  T*
+  ([Service]) Tj
+  T*
+  (Type=simple) Tj
+  T*
+  (WorkingDirectory=/opt/my-app) Tj
+  T*
+  (ExecStart=/usr/bin/raku -I. /opt/my-app/bin/app) Tj
+  T*
+  (Restart=on-failure) Tj
+  T*
+  [ ] TJ
+  T*
+  ([Install]) Tj
+  T*
+  (WantedBy=multi-user.target) Tj
+ET
+q
+  0 g
+  0 G
+  /GS1 gs
+  /GS2 gs
+  77 268.9 458 127.2 re
+  B
+Q
+BT
+  1 0 0 1 72 251.9 Tm
+  /F1 10 Tf
+  (This is the most basic systemd file you can make, there are a lot of other options you can put in here including things) Tj
+  11 TL
+  T*
+  (like a restart backoff if the app is not starting. It is important to note that you should use the full path to binaries in) Tj
+  T*
+  (the service file, make no assumptions, and take frequent breaks.) Tj
+ET
+BT
+  1 0 0 1 72 207.9 Tm
+  (Now, run `systemctl daemon-reload` so that systemd refreshes its cache, enable our service with `systemctl enable) Tj
+  T*
+  (my-app`, and finally start the service with `systemctl start my-app`.) Tj
+ET
+BT
+  1 0 0 1 72 174.9 Tm
+  (You should now be able to hit port ) Tj
+ET
+BT
+  1 0 0 1 72 174.9 Tm
+  /F3 8.5 Tf
+  [ -16666 (8666) ] TJ
+ET
+BT
+  1 0 0 1 72 174.9 Tm
+  /F1 10 Tf
+  [ -16206 ( \(if you haven't modified anything from part 1 or cloned the repo\). You can) ] TJ
+  T*
+  (test this by running `curl localhost:8666` - you should get a response from our app.) Tj
+ET
+BT
+  1 0 0 1 72 141.9 Tm
+  (If you're having issues and think that the app is not running, you can use `journalctl -u my-app.service` to see the) Tj
+  T*
+  (logs and correct any errors the app is having getting started.) Tj
+ET
+endstream
+endobj
+
+6 0 obj
+<< /Type /ExtGState /ca 0.1 >>
+endobj
+
+7 0 obj
+<< /Type /ExtGState /CA 0.25 >>
+endobj
+
+8 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Times-Roman
+  /Encoding /WinAnsiEncoding
+>>
+endobj
+
+9 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Times-Bold
+  /Encoding /WinAnsiEncoding
+>>
+endobj
+
+10 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding 11 0 R >>
+endobj
+
+11 0 obj
+<<
+  /Type /Encoding
+  /BaseEncoding /WinAnsiEncoding
+  /Differences [ 1 /numbersign ]
+>>
+endobj
+
+12 0 obj
+<<
+  /Type /Page
+  /Contents 13 0 R
+  /Parent 3 0 R
+  /Resources <<
+    /ExtGState << /GS1 14 0 R /GS2 15 0 R >>
+    /Font << /F1 8 0 R /F2 9 0 R /F3 10 0 R /F4 16 0 R >>
+  >>
+>>
+endobj
+
+13 0 obj
+<< /Length 3772 >> stream
+BT
+  1 0 0 1 72 704 Tm
+  /F1 10 Tf
+  (That's all there really is in a basic systemd service. If you'd like to delve into service files more, ) Tj
+ET
+q
+  0 0 1 rg
+  0 0 1 RG
+  BT
+    1 0 0 1 72 704 Tm
+    [ -38437 (this) ] TJ
+  ET
+Q
+BT
+  1 0 0 1 72 704 Tm
+  [ -39882 ( is a hand) ] TJ
+  11 TL
+  T*
+  (resource. Onto to the tougher stuff.) Tj
+ET
+BT
+  1 0 0 1 72 657.8 Tm
+  /F2 16 Tf
+  (Configuring Apache) Tj
+ET
+BT
+  1 0 0 1 72 635.8 Tm
+  /F1 10 Tf
+  (Getting the certificates with ) Tj
+ET
+BT
+  1 0 0 1 72 635.8 Tm
+  /F3 8.5 Tf
+  [ -13396 (certbot) ] TJ
+ET
+BT
+  1 0 0 1 72 635.8 Tm
+  /F1 10 Tf
+  [ -14957 ( prior to setting up apache is much easier but it's a headache when you have to) ] TJ
+  T*
+  (renew the certs so we're going to make this work with apache running so there's no downtime when you renew.) Tj
+ET
+BT
+  1 0 0 1 72 602.8 Tm
+  (For this tutorial we're looking at Debian 11 so some of your install commands might be a bit different but installing) Tj
+  T*
+  (apache2:) Tj
+ET
+BT
+  1 0 0 1 82 573.1 Tm
+  /F3 8.5 Tf
+  ( apt install apache2) Tj
+  9.35 TL
+  T*
+  (...) Tj
+  T*
+  ( a2enmod rewrite) Tj
+  T*
+  (...) Tj
+  T*
+  ( a2enmod proxy) Tj
+  T*
+  (...) Tj
+  T*
+  ( a2enmod proxy_http) Tj
+  T*
+  (...) Tj
+  T*
+  ( systemctl restart apache2) Tj
+  T*
+  (...) Tj
+ET
+q
+  0 g
+  0 G
+  /GS1 gs
+  /GS2 gs
+  77 483.95 458 99.15 re
+  B
+Q
+BT
+  1 0 0 1 72 466.95 Tm
+  /F1 10 Tf
+  (After getting apache installed we need to configure it to respond to our domain, so in your favorite version of vim) Tj
+  11 TL
+  T*
+  (load up ) Tj
+ET
+BT
+  1 0 0 1 72 455.95 Tm
+  /F3 8.5 Tf
+  [ -3791 (/etc/apache2/sites-available/000-default.conf) ] TJ
+ET
+BT
+  1 0 0 1 72 455.95 Tm
+  /F1 10 Tf
+  [ -26172 ( and make it look exactly like:) ] TJ
+ET
+BT
+  1 0 0 1 82 437.25 Tm
+  /F3 8.5 Tf
+  (<VirtualHost *:80>) Tj
+  9.35 TL
+  T*
+  ( ServerName pm6.dev) Tj
+  T*
+  ( ServerAlias www.pm6.dev) Tj
+  T*
+  ( DocumentRoot /var/www) Tj
+  T*
+  [ ] TJ
+  T*
+  ( RewriteEngine On) Tj
+  T*
+  ( RewriteCond %{HTTPS} off) Tj
+  T*
+  ( RewriteCond %{REQUEST_URI} !^/\\.well-known/) Tj
+  T*
+  ( RewriteRule \(.*\) https://www.pm6.dev/$1 [R,L]) Tj
+  T*
+  (</VirtualHost>) Tj
+  T*
+  [ ] TJ
+  T*
+  (<VirtualHost *:443>) Tj
+  T*
+  ( ServerName pm6.dev) Tj
+  T*
+  ( ServerAlias www.pm6.dev) Tj
+  T*
+  ( ProxyRequests     Off) Tj
+  T*
+  ( ProxyPreserveHost On) Tj
+  T*
+  [ ] TJ
+  T*
+  ( ErrorLog ${APACHE_LOG_DIR}/error.log) Tj
+  T*
+  ( CustomLog ${APACHE_LOG_DIR}/access.log combined) Tj
+  T*
+  [ ] TJ
+  T*
+  ( <Proxy *>) Tj
+  T*
+  (  Order deny,allow) Tj
+  T*
+  (  Allow from all) Tj
+  T*
+  ( </Proxy>) Tj
+  T*
+  ( ProxyPass         /  http://localhost:8666/ nocanon) Tj
+  T*
+  ( ProxyPassReverse  /  http://localhost:8666/) Tj
+  T*
+  (</VirtualHost>) Tj
+ET
+q
+  0 g
+  0 G
+  /GS1 gs
+  /GS2 gs
+  77 189.15 458 258.1 re
+  B
+Q
+BT
+  1 0 0 1 72 172.15 Tm
+  /F1 10 Tf
+  (Now we're ready to get certbot involved. The configuration above is using the hostname ) Tj
+ET
+BT
+  1 0 0 1 72 172.15 Tm
+  /F3 8.5 Tf
+  [ -41806 (pm6.dev) ] TJ
+ET
+BT
+  1 0 0 1 72 172.15 Tm
+  /F1 10 Tf
+  [ -39105 ( , you should) ] TJ
+  11 TL
+  T*
+  (replace that with whatever hostname you're looking to use. The other thing it does is redirects standard ) Tj
+ET
+BT
+  1 0 0 1 72 161.15 Tm
+  /F3 8.5 Tf
+  [ -48635 (http) ] TJ
+ET
+BT
+  1 0 0 1 72 161.15 Tm
+  /F1 10 Tf
+  [ -43380 ] TJ
+  T*
+  (requests to ) Tj
+ET
+BT
+  1 0 0 1 72 150.15 Tm
+  /F3 8.5 Tf
+  [ -5359 (https) ] TJ
+ET
+BT
+  1 0 0 1 72 150.15 Tm
+  /F1 10 Tf
+  [ -7105 ( ) ] TJ
+ET
+BT
+  1 0 0 1 72 150.15 Tm
+  /F4 10 Tf
+  [ -7355 (unless) ] TJ
+ET
+BT
+  1 0 0 1 72 150.15 Tm
+  /F1 10 Tf
+  [ -9855 ( the request is from certbot.) ] TJ
+ET
+BT
+  1 0 0 1 82 131.45 Tm
+  /F3 8.5 Tf
+  ( apt install certbot) Tj
+  9.35 TL
+  T*
+  (...) Tj
+ET
+q
+  0 g
+  0 G
+  /GS1 gs
+  /GS2 gs
+  77 117.1 458 24.35 re
+  B
+Q
+endstream
+endobj
+
+14 0 obj
+<< /Type /ExtGState /ca 0.1 >>
+endobj
+
+15 0 obj
+<< /Type /ExtGState /CA 0.25 >>
+endobj
+
+16 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Times-Italic
+  /Encoding /WinAnsiEncoding
+>>
+endobj
+
+17 0 obj
+<<
+  /Type /Page
+  /Contents 18 0 R
+  /Parent 3 0 R
+  /Resources <<
+    /ExtGState << /GS1 19 0 R /GS2 20 0 R >>
+    /Font << /F1 8 0 R /F2 10 0 R >>
+  >>
+>>
+endobj
+
+18 0 obj
+<< /Length 2372 >> stream
+BT
+  1 0 0 1 72 704 Tm
+  /F1 10 Tf
+  (Now we're ready to set up the certificates, grab that shiny domain name and replace ) Tj
+ET
+BT
+  1 0 0 1 72 704 Tm
+  /F2 8.5 Tf
+  [ -39679 ({EMAIL}) ] TJ
+ET
+BT
+  1 0 0 1 72 704 Tm
+  /F1 10 Tf
+  [ -37297 ( and ) ] TJ
+ET
+BT
+  1 0 0 1 72 704 Tm
+  /F2 8.5 Tf
+  [ -46166 ({DOMAIN}) ] TJ
+ET
+BT
+  1 0 0 1 72 704 Tm
+  /F1 10 Tf
+  [ -43321 ( with) ] TJ
+  11 TL
+  T*
+  (your own!) Tj
+ET
+BT
+  1 0 0 1 82 674.3 Tm
+  /F2 8.5 Tf
+  ( systemctl restart apache2) Tj
+  9.35 TL
+  T*
+  (...) Tj
+  T*
+  ( certbot certonly --webroot -w '/var/www/' -d 'www.{DOMAIN}' -d '{DOMAIN}' -n --email) Tj
+  T*
+  ('{EMAIL}' --agree-tos) Tj
+ET
+q
+  0 g
+  0 G
+  /GS1 gs
+  /GS2 gs
+  77 641.25 458 43.05 re
+  B
+Q
+BT
+  1 0 0 1 72 624.25 Tm
+  /F1 10 Tf
+  (So far we're looking fresh, if certbot succeeded then we're set up for a hands free renewal in the future. Let's put the) Tj
+  11 TL
+  T*
+  (certs to use by editing our apache2 config again in notepad++:) Tj
+ET
+BT
+  1 0 0 1 82 594.55 Tm
+  /F2 8.5 Tf
+  ( ...) Tj
+  9.35 TL
+  T*
+  (<VirtualHost *:443>) Tj
+  T*
+  (   ServerName pm6.dev) Tj
+  T*
+  (   ServerAlias www.pm6.dev) Tj
+  T*
+  (   ProxyRequests     Off) Tj
+  T*
+  (   ProxyPreserveHost On) Tj
+  T*
+  [ ] TJ
+  T*
+  (   SSLCertificateFile /etc/letsencrypt/live/www.pm6.dev/fullchain.pem) Tj
+  T*
+  (   SSLCertificateKeyFile /etc/letsencrypt/live/www.pm6.dev/privkey.pem) Tj
+  T*
+  [ ] TJ
+  T*
+  (   ErrorLog ${APACHE_LOG_DIR}/error.log) Tj
+  T*
+  (   CustomLog ${APACHE_LOG_DIR}/access.log combined) Tj
+  T*
+  [ ] TJ
+  T*
+  ( ...) Tj
+ET
+q
+  0 g
+  0 G
+  /GS1 gs
+  /GS2 gs
+  77 468 458 136.55 re
+  B
+Q
+BT
+  1 0 0 1 72 451 Tm
+  /F1 10 Tf
+  (The two new lines are the ones starting with ) Tj
+ET
+BT
+  1 0 0 1 72 451 Tm
+  /F2 8.5 Tf
+  [ -21075 (SSLCertificate) ] TJ
+ET
+BT
+  1 0 0 1 72 451 Tm
+  /F1 10 Tf
+  [ -25054 ( . Enable ) ] TJ
+ET
+BT
+  1 0 0 1 72 451 Tm
+  /F2 8.5 Tf
+  [ -33919 (ssl) ] TJ
+ET
+BT
+  1 0 0 1 72 451 Tm
+  /F1 10 Tf
+  [ -30361 ( on apache2 and then restart apache2:) ] TJ
+ET
+BT
+  1 0 0 1 82 432.3 Tm
+  /F2 8.5 Tf
+  ( a2enmod ssl) Tj
+  T*
+  (...) Tj
+  T*
+  ( systemctl restart apache2) Tj
+ET
+q
+  0 g
+  0 G
+  /GS1 gs
+  /GS2 gs
+  77 408.6 458 33.7 re
+  B
+Q
+BT
+  1 0 0 1 72 391.6 Tm
+  /F1 10 Tf
+  (Voila! That's it. That's all there is to it. If apache complains here then correct any errors and then restart this) Tj
+  11 TL
+  T*
+  (paragraph.) Tj
+ET
+endstream
+endobj
+
+19 0 obj
+<< /Type /ExtGState /ca 0.1 >>
+endobj
+
+20 0 obj
+<< /Type /ExtGState /CA 0.25 >>
+endobj
+
+xref
+0 21
+0000000000 65535 f 
+0000000015 00000 n 
+0000000190 00000 n 
+0000000251 00000 n 
+0000000359 00000 n 
+0000000540 00000 n 
+0000004276 00000 n 
+0000004323 00000 n 
+0000004371 00000 n 
+0000004479 00000 n 
+0000004586 00000 n 
+0000004673 00000 n 
+0000004780 00000 n 
+0000004976 00000 n 
+0000008802 00000 n 
+0000008850 00000 n 
+0000008899 00000 n 
+0000009009 00000 n 
+0000009184 00000 n 
+0000011610 00000 n 
+0000011658 00000 n 
+trailer
+<<
+  /ID [ <18d0c22d18e19bf4d24f40c5514efddb> <18d0c22d18e19bf4d24f40c5514efddb> ]
+  /Info 1 0 R
+  /Root 2 0 R
+  /Size 21
+>>
+startxref
+11707
+%%EOF
