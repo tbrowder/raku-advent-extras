@@ -118,7 +118,7 @@ for @pdfs-in.kv -> $i, $pdf-in {
 # do we need to specify 'media-box'?
 my $pdf = PDF::Lite.new;
 $pdf.media-box = 'Letter';
-my $center     = 4.25*72;
+my $centerx    = 4.25*72;
 
 # manipulate the PDF some more
 my $tot-pages = 0;
@@ -135,19 +135,19 @@ $page.text: -> $txt {
     $text = "An Apache/CRO Web Server";
     $txt.text-position = 0, $baseline; # baseline height is determined here
     # output aligned text
-    $txt.say: $text, :align<center>, :position[$center];
+    $txt.say: $text, :align<center>, :position[$centerx];
 
     $txt.font = $font2, 14;
     $baseline -= 60;
     $txt.text-position = 0, $baseline; # baseline height is determined here
-    $txt.say: "by", :align<center>, :position[$center];
+    $txt.say: "by", :align<center>, :position[$centerx];
     $baseline -= 30;
 
     my @text = "Tony O'Dell", "2022-09-23", "[https://deathbykeystroke.com]";
     for @text -> $text {
         $baseline -= 20;
         $txt.text-position = 0, $baseline; # baseline height is determined here
-        $txt.say: $text, :align<center>, :position[$center];
+        $txt.say: $text, :align<center>, :position[$centerx];
     }
 }
 
@@ -161,7 +161,7 @@ for @pdf-objs.kv -> $i, $pdf-obj {
         $txt.font = $font, 16;
         $txt.text-position = 0, 7*72; # baseline height is determined here
         # output aligned text
-        $txt.say: $text, :align<center>, :position[$center];
+        $txt.say: $text, :align<center>, :position[$centerx];
     }
 
     my $pc = $pdf-obj.page-count;
