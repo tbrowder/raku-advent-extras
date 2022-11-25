@@ -118,6 +118,7 @@ for @pdfs-in.kv -> $i, $pdf-in {
 # do we need to specify 'media-box'?
 my $pdf = PDF::Lite.new;
 $pdf.media-box = 'Letter';
+my $center     = 4.25*72;
 
 # manipulate the PDF some more
 my $tot-pages = 0;
@@ -127,9 +128,8 @@ my PDF::Lite::Page $page = $pdf.add-page;
 my $font  = $pdf.core-font(:family<Times-RomanBold>);
 my $font2 = $pdf.core-font(:family<Times-Roman>);
 $page.text: -> $txt {
-    my ($text, $baseline, $center);
+    my ($text, $baseline);
     $baseline = 7*72;
-    $center = 4.25*72;
     $txt.font = $font, 16;
 
     $text = "An Apache/CRO Web Server";
@@ -149,7 +149,6 @@ $page.text: -> $txt {
         $txt.text-position = 0, $baseline; # baseline height is determined here
         $txt.say: $text, :align<center>, :position[$center];
     }
-
 }
 
 for @pdf-objs.kv -> $i, $pdf-obj {
@@ -162,16 +161,17 @@ for @pdf-objs.kv -> $i, $pdf-obj {
         $txt.font = $font, 16;
         $txt.text-position = 0, 7*72; # baseline height is determined here
         # output aligned text
-        $txt.say: $text, :align<center>, :position[4.25*72];
+        $txt.say: $text, :align<center>, :position[$center];
     }
 
     my $pc = $pdf-obj.page-count;
     say "Input doc $part: $pc pages";
     $tot-pages += $pc;
-    for 1..$pdf-obj.page-count -> $page-num {
+    for 1..$pc -> $page-num {
         $pdf.add-page: $pdf-obj.page($page-num);
     }
 }
+
 say "Total input pages: $tot-pages";
 my $new-doc = "an-apache-cro-web-server.pdf";
 my $new-pages = $pdf.page-count;
