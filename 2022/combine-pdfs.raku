@@ -5,6 +5,7 @@ use PDF::Font::Loader;
 
 use lib "./lib";
 use Vars;
+use Subs;
 
 my enum Paper <Letter A4>;
 my $debug   = 0;
@@ -21,27 +22,37 @@ my @pdfs-in = <
     pdf-docs/Creating-a-Cro-App-Part2-by-Tony-O.pdf
 >;
 
+# title of output pdf
+my $new-doc   = "an-apache-cro-web-server.pdf";
+# title on cover
+my $new-title = "An Apache/CRO Web Server";
+
 if not @*ARGS.elems {
     print qq:to/HERE/;
     Usage: {$*PROGRAM.basename} pdf=X title=Y [...options...]
-
+      
     Args
       pdf[=X] - list of pdf docs to combine [default: an internal list]
-              - where X is either
-                  + a comma-separated list of paths
-                    to existing PDF documents to be combined
-                        OR
-                  + the name of a file listing PDF docs to be combined,
+                    OR
+              - where X is the name of a file listing PDF docs to be combined,
                     one name per line, comments and blank lines are
                     ignored
-
+       
       title=Y - where Y is the desired title for the combined
-                  document; spaces are indicated by periods;
+                  document file; spaces are indicated by periods;
                   e.g., 'My.Title'
+                  [default: $new-title]
+       
+      comb=Z  - where Z is the desired name of the output PDF
+                  [default: $new-doc]
+      
     Options
       numbers - Produces page numbers on each page
+                  except the cover which is number
+                  one but not shown; format:
                   (bottom right of page: 'Page N of M')
-
+                  [default: False]
+     
     Combines the input PDFs into one document
     HERE
     exit
@@ -91,6 +102,13 @@ for @*ARGS {
     when /^ :i g / {
         ; # okay: ++$go;
     }
+    when /^ :i t[itle]? ['=' (\S+) ]? / {
+        $new-title = ~$0;
+        $new-title ~~ s:g/'.'/ /;
+    }
+    when /^ :i c[omb]? ['=' (\S+) ]? / {
+        $new-doc = ~$0;
+    }
     when /^ :i pd[f]? ['=' (\S+) ]? / {
         if $0.defined {
             note "WARNING: mode 'pdf=X' is  NYI";
@@ -105,7 +123,6 @@ for @*ARGS {
         note "WARNING: Unknown arg '$_'";
         note "         Exiting..."; exit;
     }
-
 }
 
 my @pdf-objs;
@@ -132,7 +149,7 @@ $page.text: -> $txt {
     $baseline = 7*72;
     $txt.font = $font, 16;
 
-    $text = "An Apache/CRO Web Server";
+    $text = $new-title;
     $txt.text-position = 0, $baseline; # baseline height is determined here
     # output aligned text
     $txt.say: $text, :align<center>, :position[$centerx];
@@ -172,8 +189,11 @@ for @pdf-objs.kv -> $i, $pdf-obj {
     }
 }
 
+if $page-numbers {
+    # use method !paginate($pdf) from David's github.com/pod-to-pdf/Pod-To-PDF-Lite-raku
+}
+
 say "Total input pages: $tot-pages";
-my $new-doc = "an-apache-cro-web-server.pdf";
 my $new-pages = $pdf.page-count;
 
 $pdf.save-as: $new-doc;
