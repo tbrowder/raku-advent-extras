@@ -17,7 +17,9 @@ my $margin  = 1 * 72; # inches => PS points
 my Paper $paper  = Letter;
 my $page-numbers = False;
 
-my @pdfs-in = <
+
+my @pdfs-in;
+@pdfs-in = <
     pdf-docs/Creating-a-Cro-App-Part1-by-Tony-O.pdf
     pdf-docs/Creating-a-Cro-App-Part2-by-Tony-O.pdf
 >;
@@ -113,6 +115,7 @@ for @*ARGS {
         if $0.defined {
             note "WARNING: mode 'pdf=X' is  NYI";
             note "         Exiting..."; exit;
+            @pdfs-in = read-pdf-list ~$0;
         }
         else {
             say "Using internal list of PDF files:";
@@ -144,6 +147,7 @@ my $tot-pages = 0;
 my PDF::Lite::Page $page = $pdf.add-page;
 my $font  = $pdf.core-font(:family<Times-RomanBold>);
 my $font2 = $pdf.core-font(:family<Times-Roman>);
+# make this a sub: sub make-cover-page(PDF::Lite::Page $page, |c) is export
 $page.text: -> $txt {
     my ($text, $baseline);
     $baseline = 7*72;
